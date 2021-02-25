@@ -1,0 +1,39 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/PetPortalHosts
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalHosts/ssh-key
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalHosts/ssh-key/1.0.0
+  type: udm.DeploymentPackage
+  deployables:
+  - name: chmod
+    type: cmd.Command
+    commandLine: chmod 600 /opt/xebialabs/xl-deploy-server/conf/ssh-key.pem
+    order: 80
+  - name: ssh-key
+    type: file.File
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    targetPath: /opt/xebialabs/xl-deploy-server/conf
+    targetPathShared: "true"
+    targetFileName: ssh-key.pem
+    file: !file "artifacts/ssh-key/ssh-key.pem"
+
+---
+apiVersion: xl-deploy/v1
+kind: Deployment
+spec:
+ package: Applications/PetPortalHosts/ssh-key/1.0.0
+ environment: Environments/Amazon/aws_terraform

@@ -1,0 +1,12 @@
+version: "2"
+services:
+  xl-deploy:
+    image: xebialabs/xl-deploy:10.0
+    container_name: xl-deploy
+    ports:
+     - "4516:4516"
+    volumes:
+     - ./terraform:/usr/local/bin/terraform
+    environment:
+     - ADMIN_PASSWORD=admin
+     - ACCEPT_EULA=Y

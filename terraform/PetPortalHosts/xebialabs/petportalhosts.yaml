@@ -1,0 +1,96 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/PetPortalHosts
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalHosts/servers
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: !format Applications/PetPortalHosts/servers/%version%
+  type: udm.ProvisioningPackage
+  templates:
+  - name: InfraTEST
+    type: template.core.Directory
+    instanceName: 'Infrastructure/aws/TEST'
+  - name: EnvTEST
+    type: template.core.Directory
+    instanceName: 'Environments/aws'
+  ##########################################################################
+  # Webserver Template
+  - name: webserver
+    type: template.overthere.SshHost
+    instanceName: 'aws/TEST/webserver'
+    childTemplates:
+    - name: apache
+      type: template.www.ApacheHttpdServer
+      startCommand: systemctl start httpd
+      stopCommand: systemctl stop httpd
+      restartCommand: systemctl restart httpd
+      defaultDocumentRoot: /var/www/html
+      configurationFragmentDirectory: /etc/httpd/conf.d
+    os: UNIX
+    connectionType: SUDO
+    address: '{{%outputVariables.webserver_public_dns%}}'
+    username: ec2-user
+    privateKeyFile: /opt/xebialabs/xl-deploy-server/conf/ssh-key.pem
+    sudoUsername: root
+  ##########################################################################
+  # Appserver Template
+  - name: appserver
+    type: template.overthere.SshHost
+    instanceName: 'aws/TEST/appserver'
+    childTemplates:
+    - name: jbosss
+      type: template.jbossdm.StandaloneServer
+      home: /opt/wildfly
+      port: "9990"
+      username: jboss
+      password: admin
+    - name: mysqldb
+      type: template.sql.MySqlClient
+      username: '{{DB_USERNAME}}'
+      password: '{{DB_PASSWORD}}'
+      mySqlHome: /usr
+      databaseName: mysql
+      additionalOptions: '{{%outputVariables.mysqlHostOption%}}'
+    os: UNIX
+    connectionType: SUDO
+    address: '{{%outputVariables.appserver_public_dns%}}'
+    username: ec2-user
+    privateKeyFile: /opt/xebialabs/xl-deploy-server/conf/ssh-key.pem
+    sudoUsername: root
+  #############################################################################
+  deployables:
+  - name: servers
+    type: terraform.Module
+    boundTemplates:
+    - !format Applications/PetPortalHosts/servers/%version%/webserver
+    - !format Applications/PetPortalHosts/servers/%version%/appserver
+    - !format Applications/PetPortalHosts/servers/%version%/EnvTEST
+    - !format Applications/PetPortalHosts/servers/%version%/InfraTEST
+    preScannedPlaceholders: true
+    placeholders:
+    - aws_region
+    - AWS_SECRET_KEY
+    - AWS_ACCESS_KEY
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    environmentPath: 'Environments/aws/TEST'
+    automaticDictionary: "true"
+    dictionaryPath: 'Environments/aws/TEST-dic'
+    generateCIsFromResources: "true"
+    inputVariables:
+      ssh-key: rbroker-us1
+      ami: ami-0e01ce4ee18447327
+      aws_region: us-east-2
+      ami-size: t2.micro
+    file: !file "artifacts/aws.ec2_instance.zip"

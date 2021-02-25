@@ -1,0 +1,13 @@
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon
+  children:
+  - name: localhost
+    type: overthere.LocalHost
+    os: UNIX
+    children:
+    - name: terraform
+      type: terraform.TerraformClient
+      workingDirectory: /tmp/terraform

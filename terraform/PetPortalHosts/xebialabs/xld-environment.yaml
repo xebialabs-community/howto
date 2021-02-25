@@ -1,0 +1,22 @@
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- directory: Environments/Amazon
+  children:
+  - name: aws-dict
+    type: udm.Dictionary
+    entries:
+      DB_USERNAME: petportal
+      aws_region: us-east-2
+    encryptedEntries:
+      AWS_ACCESS_KEY: !value "AWS_ACCESS_KEY"
+      AWS_SECRET_KEY: !value "AWS_SECRET_KEY"
+      DB_PASSWORD: !value "DB_PASSWORD"
+  - name: aws_terraform
+    type: udm.Environment
+    members:
+    - Infrastructure/Amazon/localhost
+    - Infrastructure/Amazon/localhost/terraform
+    dictionaries:
+    - Environments/Amazon/aws-dict

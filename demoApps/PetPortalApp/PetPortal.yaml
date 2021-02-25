@@ -1,0 +1,54 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/PetPortalApps
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetPortal
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: !format Applications/PetPortalApps/PetPortal/%version%
+  type: udm.DeploymentPackage
+  orchestrator:
+  - sequential-by-deployment-group
+  deployables:
+  - name: PetClinic-ds-on-jboss
+    type: jbossdm.DataSourceSpec
+    jndiName: java:/jdbc/pets
+    driverName: '{{DB_DRIVER}}'
+    username: '{{DB_USERNAME}}'
+    password: '{{DB_PASSWORD}}'
+    connectionUrl: '{{DB_URL}}'
+  - name: PetClinic-ear
+    type: jee.Ear
+    preScannedPlaceholders: true
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    file: !file "artifacts/PetClinic.ear"
+  - name: webContent
+    type: www.WebContent
+    preScannedPlaceholders: true
+    placeholders:
+    - PETPORTAL_TITLE
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    file: !file "artifacts/PetPortal_pages.zip"
+  - name: PetPortal-to-PetClinic-ProxyPass
+    type: www.ApacheProxyPassSpec
+    from: /{{PETCLINIC_CONTEXT_ROOT}}
+    to: http://{{APPSERVER_HOST}}:{{APPSERVER_PORT}}/{{PETCLINIC_CONTEXT_ROOT}}
+    reverse: "true"
+  - name: sql
+    type: sql.SqlScripts
+    preScannedPlaceholders: true
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    file: !file "artifacts/sql.zip"
