@@ -14,10 +14,10 @@ resource "aws_db_instance" "mysqldb" {
   engine_version         = "5.7.19"
   identifier             = "rrb-mysqldb"
   instance_class         = "db.t2.micro"
-  password               = "{{DB_USERNAME}}"
+  password               = "{{DB_PASSWORD}}"
   skip_final_snapshot    = true
   storage_encrypted      = false
-  username               = "{{DB_PASSWORD}}"
+  username               = "{{DB_USERNAME}}"
   vpc_security_group_ids = var.my-sg
 }
 
