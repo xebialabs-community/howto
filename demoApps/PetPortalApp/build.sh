@@ -33,12 +33,11 @@ then
   fi
   chmod +x xl
   export PATH=$PATH:.
-else
-  xl apply --xl-deploy-url=$XLD_URL --xl-deploy-username=$XLD_USER --xl-deploy-password=$XLD_PASSWD --file PetPortal.yaml --values version=${VERSION}
-  if [ ! -x "$path_to_executable" ]
-  then
-    rm xl
-  fi
+fi
+xl apply --xl-deploy-url=$XLD_URL --xl-deploy-username=$XLD_USER --xl-deploy-password=$XLD_PASSWD --file PetPortal.yaml --values version=${VERSION}
+if [ ! -x "$path_to_executable" ]
+then
+  rm xl
 fi
 rm artifacts/PetPortal_pages.zip
 rm artifacts/sql.zip
