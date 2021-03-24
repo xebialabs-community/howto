@@ -1,3 +1,6 @@
+variable "project" {
+  type         = string
+}
 ##########################################################################
 resource "aws_security_group" "my_sg" {
   name        = format("%s-security_group", var.project)

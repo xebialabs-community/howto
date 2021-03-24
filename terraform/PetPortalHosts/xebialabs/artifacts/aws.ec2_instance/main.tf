@@ -6,12 +6,19 @@ provider "aws" {
 }
 
 ##########################################################################
+#  Security Group
+#
+module "security_group" {
+    source = "./security_group"
+    project  = var.project
+}
+##########################################################################
 #  Webserver
 #
 module "webserver" {
     source = "./webserver"
     my-ami = var.ami
-    my-sg = var.security_groups
+    my-sg    = [ module.security_group.security_group_id ]
     ami-size = var.ami-size
     ssh-key  = var.ssh-key
     project  = var.project
@@ -22,7 +29,7 @@ module "webserver" {
 module "appserver" {
     source   = "./appserver"
     my-ami   = var.ami
-    my-sg    = var.security_groups
+    my-sg    = [ module.security_group.security_group_id ]
     ami-size = var.ami-size
     ssh-key  = var.ssh-key
     project  = var.project
@@ -33,6 +40,6 @@ module "appserver" {
 #
 module "db" {
     source = "./db"
-    my-sg = var.security_groups
+    my-sg    = [ module.security_group.security_group_id ]
     project  = var.project
 }

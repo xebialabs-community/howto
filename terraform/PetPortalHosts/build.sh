@@ -25,7 +25,7 @@ then
   chmod +x xl
   export PATH=$PATH:.
 else
-  xl apply --xl-deploy-url=$XLD_URL --xl-deploy-username=$XLD_USER --xl-deploy-password=$XLD_PASSWD --file xebialabs.yaml --values version=$VERSION
+  xl apply --xl-deploy-url=$XLD_URL --xl-deploy-username=$XLD_USER --xl-deploy-password=$XLD_PASSWD --non-interactive --file xebialabs.yaml --values version=$VERSION
   if [ ! -x "$path_to_executable" ]
   then
     rm xl

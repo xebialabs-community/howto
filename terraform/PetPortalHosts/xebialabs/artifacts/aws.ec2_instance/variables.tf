@@ -27,8 +27,3 @@ variable "ssh-key" {
   type         = string
   default      = "rbroker-us1"
 }
-
-variable "security_groups" {
-  type    = list(string)
-  default = ["sg-0ede761da972c2900", "sg-0755f4c4ecea46847"]
-}
