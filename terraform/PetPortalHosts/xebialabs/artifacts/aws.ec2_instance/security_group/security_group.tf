@@ -39,6 +39,14 @@ resource "aws_security_group" "my_sg" {
   }
 
   ingress {
+    description = "Allow MySQL"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    self        = true
+  }
+
+  ingress {
     description = "All in SG"
     from_port   = 0
     to_port     = 0
