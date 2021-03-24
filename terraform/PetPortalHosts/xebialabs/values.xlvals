@@ -3,4 +3,3 @@ ssh_key=rbroker-us1
 ami=ami-0e01ce4ee18447327
 aws_region=us-east-2
 ami_size=t2.micro
-security_groups=["sg-0ede761da972c2900", "sg-0755f4c4ecea46847"]
