@@ -13,6 +13,9 @@ variable "ssh-key" {
 variable "ami-size" {
   type         = string
 }
+variable "project" {
+  type         = string
+}
 ##########################################################################
 #  Webserver
 #
@@ -24,7 +27,7 @@ resource "aws_instance" "webserver" {
 
   associate_public_ip_address = true
     tags = {
-      Name = "rrb-webserver"
+      Name = format("%s-webserver", var.project)
       Terraform   = "true"
       Environment = "dev"
     }

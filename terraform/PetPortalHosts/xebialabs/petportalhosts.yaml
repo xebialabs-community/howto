@@ -89,8 +89,10 @@ spec:
     dictionaryPath: 'Environments/aws/TEST-dic'
     generateCIsFromResources: "true"
     inputVariables:
+      project: !value "project"
       ssh-key: !value "ssh_key"
       ami: !value "ami"
       aws_region: !value "aws_region"
       ami-size: !value "ami_size"
+      security_groups: !value "security_groups"
     file: !file "artifacts/aws.ec2_instance.zip"

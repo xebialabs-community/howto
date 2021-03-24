@@ -13,18 +13,21 @@ variable "ssh-key" {
 variable "ami-size" {
   type         = string
 }
+variable "project" {
+  type         = string
+}
 ##########################################################################
 #  Appserver
 #
 resource "aws_instance" "appserver" {
   ami                    = var.my-ami
   instance_type          = var.ami-size
-  key_name               = var.ssh-key 
+  key_name               = var.ssh-key
   vpc_security_group_ids = var.my-sg
 
   associate_public_ip_address = true
     tags = {
-      Name = "rrb-appserver"
+      Name = format("%s-appserver", var.project)
       Terraform   = "true"
       Environment = "dev"
     }

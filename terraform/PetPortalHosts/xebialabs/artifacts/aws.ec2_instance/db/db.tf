@@ -4,7 +4,9 @@
 variable "my-sg" {
   type = list(string)
 }
-
+variable "project" {
+  type         = string
+}
 ##########################################################################
 #  RDS Database
 #
@@ -12,7 +14,7 @@ resource "aws_db_instance" "mysqldb" {
   allocated_storage      = 100
   engine                 = "mysql"
   engine_version         = "5.7.19"
-  identifier             = "rrb-mysqldb"
+  identifier             = format("%s-mysqldb", var.project)
   instance_class         = "db.t2.micro"
   password               = "{{DB_PASSWORD}}"
   skip_final_snapshot    = true
