@@ -1,0 +1,10 @@
+version: "2"
+services:
+  xl-deploy:
+    image: xebialabs/xl-release:10.0
+    container_name: xl-release
+    ports:
+     - "5516:5516"
+    environment:
+     - ADMIN_PASSWORD=admin
+     - ACCEPT_EULA=Y
