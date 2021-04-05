@@ -1,5 +1,7 @@
 # PetPortalHosts
 
+[![](http://img.youtube.com/vi/zaveYy86v7I/0.jpg)](http://www.youtube.com/watch?v=zaveYy86v7I "How to: Deploy to AWS EC2 Using Digital.ai Deploy and Terraform")
+
 ## Setup
 
 1. Create `secrets.xlvals` and add necessary properties (see [xebialabs/secrets.xlvals.md](xebialabs/secrets.xlvals.md))
