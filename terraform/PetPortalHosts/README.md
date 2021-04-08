@@ -4,6 +4,8 @@
 
 [http://www.youtube.com/watch?v=zaveYy86v7I](http://www.youtube.com/watch?v=zaveYy86v7I)
 
+[Documentation](https://docs.xebialabs.com/v.10.0/daibyexample/how-to/deploy-using-terraform-aws-ec2/)
+
 ## Setup
 
 1. Create `secrets.xlvals` and add necessary properties (see [xebialabs/secrets.xlvals.md](xebialabs/secrets.xlvals.md))
