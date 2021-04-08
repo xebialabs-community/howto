@@ -10,7 +10,7 @@
 
 1. Create `secrets.xlvals` and add necessary properties (see [xebialabs/secrets.xlvals.md](xebialabs/secrets.xlvals.md))
 1. Update `values.xlvals` with variables that work for you (see [xebialabs/values.xlvals](xebialabs/values.xlvals.md))
-1. Copy your public key from AWA to `xebialabs/ssh-key/ssh-key.pem`
+1. Copy your public key from AWS to `xebialabs/ssh-key/ssh-key.pem`
 1. Run `./startDemo.sh`
 1. Wait for *Digital.ai Deploy* to finish starting (`docker-compose logs -f xl-deploy` look for the point your browser line)
 1. Run `./build.sh`
