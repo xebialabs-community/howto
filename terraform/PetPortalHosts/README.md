@@ -4,7 +4,7 @@
 
 [http://www.youtube.com/watch?v=zaveYy86v7I](http://www.youtube.com/watch?v=zaveYy86v7I)
 
-[Documentation](https://docs.xebialabs.com/v.10.0/daibyexample/how-to/deploy-using-terraform-aws-ec2/)
+[Link to Documentation](https://docs.xebialabs.com/v.10.0/daibyexample/how-to/deploy-using-terraform-aws-ec2/)
 
 ## Setup
 
