@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic
+  labels:
+    app: petclinic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic
+  template:
+    metadata:
+      labels:
+        app: petclinic
+    spec:
+      containers:
+      - image: xebialabsunsupported/petclinic:2
+        name: petclinic
+        args:
+          - "java"
+          - "-Dspring.profiles.active={{db_profile}}"
+          - "-jar"
+          - "petclinic.jar"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic
+spec:
+  selector:
+    app: petclinic
+  type: NodePort
+  ports:
+      - port: 8080

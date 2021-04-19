@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: petclinic
+  labels:
+    app: petclinic
+spec:
+  rules:
+    - host: {{PETCLINIC_URL}}
+      http:
+       paths:
+         - path: /
+           backend:
+             serviceName: petclinic
+             servicePort: 8080

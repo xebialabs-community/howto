@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  xl-deploy:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: xl-deploy
+    ports:
+     - "4516:4516"
+    environment:
+     - ADMIN_PASSWORD=admin
+     - ACCEPT_EULA=Y

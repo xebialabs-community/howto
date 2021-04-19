@@ -1,0 +1,40 @@
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- directory: Environments/Amazon
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- directory: Environments/Amazon/EKS
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- directory: Environments/Amazon/EKS
+  children:
+  - name: eks_values
+    type: udm.Dictionary
+    entries:
+      db_profile: default
+      PETCLINIC_URL: !value "Environments_eks_petclinic_url"
+      user: !value "Environments_eks_db_user"
+      dbname: !value "Environments_eks_db_name"
+    encryptedEntries:
+      password: !value "Environments_eks_db_password"
+  - name: EKS
+    type: udm.Environment
+    members:
+    - Infrastructure/Amazon/EKS/eks_cluster/default
+    dictionaries:
+    - Environments/Amazon/EKS/eks_values
+---
+apiVersion: xl-deploy/v1
+kind: Permissions
+spec:
+- directory: Environments
+  roles:
+  - role: deploy_admin_read_only
+    permissions:
+    - read

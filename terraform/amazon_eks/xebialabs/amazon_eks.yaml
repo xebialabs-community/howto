@@ -1,0 +1,57 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/Amazon
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/Amazon/EKS_Cluster
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: !format Applications/Amazon/EKS_Cluster/%version%
+  type: udm.ProvisioningPackage
+  deployables:
+  - name: eks_cluster
+    type: terraform.Module
+    boundTemplates:
+    - !format Applications/Amazon/EKS_Cluster/%version%/EKS_Cluster_Master
+    - !format Applications/Amazon/EKS_Cluster/%version%/InfraTEST
+    - !format Applications/Amazon/EKS_Cluster/%version%/EnvTEST
+    placeholders:
+    - AWS_SECRET_KEY
+    - AWS_ACCESS_KEY
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    environmentPath: "Environments/eks/eksTEST"
+    automaticDictionary: "true"
+    dictionaryPath: "Environments/eks/eksTEST-dic"
+    generateCIsFromResources: "true"
+    inputVariables:
+      region: us-east-2
+      project: dad
+    file: !file "artifacts/EKS.zip"
+  templates:
+  - name: InfraTEST
+    type: template.core.Directory
+    instanceName: "Infrastructure/eks/eksTEST"
+  - name: EnvTEST
+    type: template.core.Directory
+    instanceName: "Environments/eks"
+  - name: EKS_Cluster_Master
+    type: template.k8s.Master
+    instanceName: "eks/eksTEST/cluster_master"
+    apiServerURL: "{{%outputVariables.cluster_endpoint%}}"
+    skipTLS: true
+    isEKS: "true"
+    useGlobal: "false"
+    regionName: us-east-2
+    clusterName: "{{%outputVariables.cluster_name%}}"
+    accessKey: "{{AWS_ACCESS_KEY}}"
+    accessSecret: "{{AWS_SECRET_KEY}}"

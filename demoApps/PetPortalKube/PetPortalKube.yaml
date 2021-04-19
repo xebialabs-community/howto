@@ -1,0 +1,77 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/PetPortalApps
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-Kube
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-Kube/2.0
+  type: udm.DeploymentPackage
+  deployables:
+  - name: app
+    type: k8s.ResourcesFile
+    createOrder: "62"
+    file: !file "artifacts/application.yaml"
+  - name: ingress
+    type: k8s.ResourcesFile
+    createOrder: "63"
+    file: !file "artifacts/ingress.yaml"
+  applicationDependencies:
+    PetClinic-db: "(1.0,3.0]"
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-db
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-db/1.5
+  type: udm.DeploymentPackage
+  deployables:
+  - name: mysql
+    type: k8s.ResourcesFile
+    createOrder: "61"
+    file: !file "artifacts/mysql.yaml"
+  - name: sql_config
+    type: k8s.ResourcesFile
+    file: !file "artifacts/configmap.yaml"
+  - name: secrets
+    type: k8s.ResourcesFile
+    file: !file "artifacts/secret.yaml"
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/PetPortalApps
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-Namespace
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/PetPortalApps/PetClinic-Namespace/1.0.0
+  type: udm.ProvisioningPackage
+  deployables:
+  - name: petclinic
+    type: k8s.NamespaceSpec

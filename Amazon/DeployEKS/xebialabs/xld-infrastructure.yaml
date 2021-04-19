@@ -1,0 +1,29 @@
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon/EKS
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon/EKS
+  children:
+  - name: eks_cluster
+    type: k8s.Master
+    apiServerURL: !value "Infrastructure_eks_cluster_apiServerURL"
+    skipTLS: true
+    isEKS: true
+    useGlobal: false
+    regionName: us-east-2
+    clusterName: !value "Infrastructure_eks_cluster_name"
+    accessKey: !value "Infrastructure_eks_cluster_accessKey"
+    accessSecret: !value "Infrastructure_eks_cluster_accessSecret"
+    children:
+    - name: default
+      type: k8s.Namespace
