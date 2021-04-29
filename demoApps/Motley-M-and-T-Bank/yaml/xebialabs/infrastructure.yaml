@@ -1,0 +1,38 @@
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon
+
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon/Motley-M-and-T-Bank
+
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- directory: Infrastructure/Amazon/Motley-M-and-T-Bank
+  children:
+  - name: tomcatServer
+    type: overthere.SshHost
+    os: UNIX
+    connectionType: SUDO
+    address: !value "publicIP"
+    username: !value "user"
+    privateKeyFile: /opt/xebialabs/xl-deploy-server/conf/ssh-key.pem
+    sudoUsername: root
+    children:
+    - name: tomcat
+      type: tomcat.Server
+      home: /usr/share/tomcat
+      startCommand: sudo systemctl start tomcat
+      stopCommand: sudo systemctl stop tomcat
+      statusCommand: sudo systemctl status tomcat
+      startWaitTime: 10
+      stopWaitTime: 10
+      children:
+      - name: localhost
+        type: tomcat.VirtualHost

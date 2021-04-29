@@ -1,0 +1,11 @@
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- directory: Environments/Motley-M-and-T-Bank
+  children:
+  - name: Motley-M-and-T-Bank-DEMO
+    type: udm.Environment
+    members:
+    - Infrastructure/Amazon/Motley-M-and-T-Bank/tomcatServer/tomcat/localhost
+    - Infrastructure/Amazon/Motley-M-and-T-Bank/tomcatServer

@@ -1,0 +1,64 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/Motley-M-and-T-Bank
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/Motley-M-and-T-Bank/ssh-key
+  type: udm.Application
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- name: Applications/Motley-M-and-T-Bank/ssh-key/1.0.0
+  type: udm.DeploymentPackage
+  deployables:
+  - name: chmod
+    type: cmd.Command
+    commandLine: chmod 600 /opt/xebialabs/xl-deploy-server/conf/ssh-key.pem
+    order: 80
+  - name: ssh-key
+    type: file.File
+    fileEncodings:
+      ".+\\.properties": ISO-8859-1
+    targetPath: /opt/xebialabs/xl-deploy-server/conf
+    targetPathShared: "true"
+    targetFileName: ssh-key.pem
+    file: !file "../artifacts/ssh-key.pem"
+
+########################################################################
+#
+#  Infrastructure
+#
+---
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- name: Infrastructure/localhost
+  type: overthere.LocalHost
+  os: UNIX
+
+########################################################################
+#
+#  Environment
+#
+---
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- name: Environments/XLD
+  type: udm.Environment
+  members:
+  - Infrastructure/localhost
+
+---
+apiVersion: xl-deploy/v1
+kind: Deployment
+spec:
+ package: Applications/Motley-M-and-T-Bank/ssh-key/1.0.0
+ environment: Environments/XLD

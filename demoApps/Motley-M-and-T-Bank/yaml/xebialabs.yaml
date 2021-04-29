@@ -1,0 +1,7 @@
+apiVersion: xl/v1
+kind: Import
+metadata:
+  imports:
+    - xebialabs/infrastructure.yaml
+    - xebialabs/environment.yaml
+    - xebialabs/ssh-key.yaml

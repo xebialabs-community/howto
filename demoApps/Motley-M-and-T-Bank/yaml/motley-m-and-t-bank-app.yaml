@@ -1,0 +1,23 @@
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/Motley-M-and-T-Bank
+
+---
+apiVersion: xl-deploy/v1
+kind: Applications
+spec:
+- directory: Applications/Motley-M-and-T-Bank
+  children:
+  - name: WebApp
+    type: udm.Application
+    children:
+    - name: !format "%version%"
+      type: udm.DeploymentPackage
+      deployables:
+      - name: Motley-M-and-T-Bank
+        type: jee.War
+        fileEncodings:
+          ".+\\.properties": ISO-8859-1
+        file: !file "artifacts/mandtbank.war"
