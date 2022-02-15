@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld-prod-deployment
+  labels:
+    app: helloworld-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helloworld-prod
+  template:
+    metadata:
+      labels:
+        app: helloworld-prod
+    spec:
+      containers:
+      - name: helloworld-prod-container
+        image: xldevdocker/helloworld:3f0bce84e53790c3f134ff5143844f54cac494bc
+        ports:
+        - containerPort: 8086
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld-prod-service
+spec:
+  selector:
+    app: helloworld-prod
+  ports:
+  - protocol: TCP
+    port: 8089
+    targetPort: 8086
