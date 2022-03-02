@@ -51,6 +51,7 @@ jobs:
         DOCKER_REGISTRY_HOST: ${{ secrets.DOCKER_REGISTRY_HOST }}
         DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
       run: |
+        cd argocd/helloworld
         docker login --username ${DOCKER_USER} --password ${DOCKER_PASS}
         docker build -t ${DOCKER_REPO}/helloworld:${SHA8} -f Dockerfile .
         docker tag ${DOCKER_REPO}/helloworld:${SHA8} ${DOCKER_REGISTRY_HOST}/${DOCKER_REPO}/helloworld:${SHA8}
@@ -62,6 +63,7 @@ jobs:
         XLR_PASS: ${{ secrets.XLR_PASS }}
         XLR_URL: ${{ secrets.XLR_URL }}   
       run: |
+        cd argocd/helloworld
         sed -i "s/PLACEHOLDER/$SHA8/g" start-release.yaml
         curl -LO https://dist.xebialabs.com/public/xl-cli/22.0.0/linux-amd64/xl
         chmod +x xl
