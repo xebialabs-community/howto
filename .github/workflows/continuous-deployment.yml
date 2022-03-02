@@ -1,0 +1,47 @@
+name: Maven test & Docker build-push
+
+env:
+  ARGO_APP_NAME: "helloworld-dev"
+  GIT_REPO_URL: "https://github.com/isaacsatish/helloworld-cd.git"
+  GIT_REPO_NAME: "helloworld-cd"
+  LOCAL_GIT_CLONE_PATH: "/home/ubuntu/git-temp-dir"
+  MANIFEST_PATH_IN_GIT: "dev"
+  MANIFEST_FILE: "helloworld.yaml"
+  
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'argocd/helloworld/**'
+
+jobs:
+  build:
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Set SHA8
+      run: echo ::set-env name=SHA8::$(git log --oneline -1 | awk '{print $1}')
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        
+    - name: Set SHA8
+      run: echo ::set-env name=SHA8::$(git log --oneline -1 | awk '{print $1}')
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1.4.2
+      with:
+        java-version: '11.0.8'
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+
+    - name: Build with Maven
+      run: |
+        cd argocd/helloworld
+        mvn clean install
+        
+   
