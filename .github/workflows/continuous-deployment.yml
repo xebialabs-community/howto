@@ -44,4 +44,28 @@ jobs:
         cd argocd/helloworld
         mvn clean install
         
+    - name: Docker Build 
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        DOCKER_REGISTRY_HOST: ${{ secrets.DOCKER_REGISTRY_HOST }}
+        DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      run: |
+        docker login --username ${DOCKER_USER} --password ${DOCKER_PASS}
+        docker build -t ${DOCKER_REPO}/helloworld:${SHA8} -f Dockerfile .
+        docker tag ${DOCKER_REPO}/helloworld:${SHA8} ${DOCKER_REGISTRY_HOST}/${DOCKER_REPO}/helloworld:${SHA8}
+        docker push ${DOCKER_REPO}/helloworld:${SHA8}
+        
+    - name: Trigger Release Template 
+      env:
+        XLR_USER: ${{ secrets.XLR_USER }}
+        XLR_PASS: ${{ secrets.XLR_PASS }}
+        XLR_URL: ${{ secrets.XLR_URL }}   
+      run: |
+        sed -i "s/PLACEHOLDER/$SHA8/g" start-release.yaml
+        curl -LO https://dist.xebialabs.com/public/xl-cli/22.0.0/linux-amd64/xl
+        chmod +x xl
+        ./xl apply --xl-release-url=$XLR_URL --xl-release-username=$XLR_USER --xl-release-password=$XLR_PASS --file start-release.yaml
+        echo `./xl version`
+        rm xl
    
