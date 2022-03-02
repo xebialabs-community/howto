@@ -1,0 +1,14 @@
+
+apiVersion: xl-release/v1
+kind: Release
+spec:
+  name: Trigger Continuous Delivery
+  template: Argo CD/Continuous Delivery
+  variables:
+    ARGO_APP_NAME: "helloworld-dev"
+    GIT_REPO_URL: "https://github.com/isaacsatish/helloworld-cd.git"
+    GIT_REPO_NAME: "helloworld-cd"   
+    LOCAL_GIT_CLONE_PATH: "/home/ubuntu/git-temp-dir"
+    MANIFEST_PATH_IN_GIT: "dev"
+    MANIFEST_FILE: "helloworld.yaml"
+    NEW_TAG: PLACEHOLDER
