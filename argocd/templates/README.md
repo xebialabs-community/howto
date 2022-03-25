@@ -47,9 +47,9 @@ The template contains tasks to
 1. Create a revision branch in the repository with manifest files
 1. Clone the revision branch locally
 1. Update the new image in the kubernetes manifest file
-1. Commmit and push the change
+1. Commit and push the change
 1. Create a pull request
-1. Appove the pull request
+1. Approve the pull request
 1. Merge the pull request
 1. Sync the application 
 1. Get the Sync Status 
