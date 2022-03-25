@@ -2,7 +2,7 @@
 
 Use the templates to setup Continuous Delivery to Kubernetes using DAI Release and ArgoCD. Add your own flavours of Approval flows and Security scans.
 
-![argocd](/images/argocd-continuous-delivery.png)
+![argocd](/argocd/templates/images/argocd-continuous-delivery.png)
 
 ### Prerequisites
 1. Two git repositories, one with source code and other with kubernetes manifest files for deployment
@@ -31,7 +31,7 @@ When you run the release, the template is going to ask you for few inputs like t
 
 Use this template to setup a continuous delivery to the target kubernetes environment. 
 
-![argocd](/images/argocd-continuous-delivery-1.PNG)
+![argocd](/argocd/templates/images/argocd-continuous-delivery-1.PNG)
 
 ### Simple continuous build setup
 Configure Github actions or a Jenkins job to perform the following actions whenever there is a change detected in the source code repository
