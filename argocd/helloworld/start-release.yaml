@@ -3,7 +3,7 @@ apiVersion: xl-release/v1
 kind: Release
 spec:
   name: Trigger Continuous Delivery
-  template: Argo CD/Continuous Delivery
+  template: github/Continuous Delivery
   variables:
     ARGO_APP_NAME: "helloworld-dev"
     GIT_REPO_URL: "https://github.com/xebialabs-community/howto.git"
@@ -12,3 +12,4 @@ spec:
     MANIFEST_PATH_IN_GIT: "argocd/helloworld-cd/dev"
     MANIFEST_FILE: "helloworld.yaml"
     NEW_TAG: PLACEHOLDER
+
