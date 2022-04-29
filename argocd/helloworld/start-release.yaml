@@ -3,7 +3,7 @@ apiVersion: xl-release/v1
 kind: Release
 spec:
   name: Trigger Continuous Delivery
-  template: github/Continuous Delivery
+  template: argo-guide-1/Continuous Delivery
   variables:
     ARGO_APP_NAME: "helloworld-dev"
     GIT_REPO_URL: "https://github.com/isaacsatish/howto.git"
