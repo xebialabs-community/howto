@@ -3,10 +3,10 @@ apiVersion: xl-release/v1
 kind: Release
 spec:
   name: Trigger Continuous Delivery
-  template: argo-guide-1/Continuous Delivery
+  template: folder-name/Continuous Delivery
   variables:
     ARGO_APP_NAME: "helloworld-dev"
-    GIT_REPO_URL: "https://github.com/isaacsatish/howto.git"
+    GIT_REPO_URL: "https://github.com/xebialabs-community/howto.git"
     GIT_REPO_NAME: "howto"   
     LOCAL_GIT_CLONE_PATH: "/home/ubuntu/git-temp-dir"
     MANIFEST_PATH_IN_GIT: "argocd/helloworld-cd/dev"
