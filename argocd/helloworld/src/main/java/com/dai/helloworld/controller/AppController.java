@@ -8,6 +8,6 @@ public class AppController {
 
 	@RequestMapping("/")
 	String hello1() {
-		return "Hello World, Spring Boot Change1!";
+		return "Hello World, Spring Boot Change1-1!";
 	}
 }
