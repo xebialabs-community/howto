@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: guestbook-bluegreen-rollout
+spec:
+  replicas: 2
+  strategy:
+    blueGreen: 
+      activeService: guestbook-bluegreen-active
+      previewService: guestbook-bluegreen-preview
+      autoPromotionEnabled: false
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: guestbook-bluegreen
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: guestbook-bluegreen
+    spec:
+      containers:
+      - name: guestbook-container
+        image: xldevdocker/guestbook:blue
+        env:
+        - name: REDIS_HOST
+          value: redis

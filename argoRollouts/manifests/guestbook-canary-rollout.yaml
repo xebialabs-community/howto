@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: guestbook-canary-rollout
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      canaryService: guestbook-canary
+      stableService: guestbook-stable
+      trafficRouting:
+        smi: {}
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: guestbook-canary
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: guestbook-canary
+    spec:
+      containers:
+      - name: guestbook-container
+        image: xldevdocker/guestbook:blue
+        env:
+        - name: REDIS_HOST
+          value: redis

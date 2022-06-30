@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-bluegreen-active
+spec:
+  type: LoadBalancer  
+  ports:
+  - name: guestbook
+    port: 8080
+  selector:
+    app: guestbook-bluegreen
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-bluegreen-preview
+spec:
+  type: LoadBalancer  
+  ports:
+  - name: guestbook
+    port: 8080
+  selector:
+    app: guestbook-bluegreen
