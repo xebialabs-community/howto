@@ -26,7 +26,7 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. kubectl get service guestbook-stable -n guestbook-canary
    to view the application in browser <external-ip>:8080/index.html
 
-## Update Canary Rollout with a new Image
+## Update Canary Rollout with a new Image Manually
 
 1. kubectl argo rollouts set image guestbook-canary-rollout guestbook-container=xldevdocker/guestbook:green -n guestbook-canary
    updates 20% of pods in guestbook-canary-rollout with new image
@@ -35,6 +35,22 @@ Use the templates and manifests to perform bluegreen and canary deployments.
    executes the rest of the update steps
 1. kubectl argo rollouts promote guestbook-canary-rollout -n guestbook-canary
    updates the final set of pods with the new image
+   
+## Rollout new revisions using Canary
+
+1. In Release, create Unix host connection. Specify a host which has the following
+	kubectl installed and confiured to connect to the desired cluster
+	kubectl argo rollouts plugin installed
+1. Create Kubectl Argo Rollouts connection and specify the kubectl path, namespace as guestbook-canary and other fields or if required. 
+   System defaults from the unix host will be picked where not specified.
+1. Import the template for Canary deployment found here <github>
+1. Create the following global variables in Release
+    * canary.rollout-name - guestbook-canary-rollout
+    * canary.container -name- guestbook-container
+    * canary.prev-failed-image - None
+1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
+1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
+1. Assign and complete manual tasks where required. Choose to promote or abort rollout as desired.
 
 ## Initial BlueGreen Rollout Setup in K8s
 
@@ -51,7 +67,7 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. kubectl get service guestbook-bluegreen-active -n guestbook-bluegreen
    to view the application in browser <external-ip>:8080/index.html
 
-## Update BlueGreen Rollout with a new Image
+## Update BlueGreen Rollout with a new Image Manually
 
 1. kubectl argo rollouts set image guestbook-bluegreen-rollout guestbook-container=xldevdocker/guestbook:green -n guestbook-bluegreen
    Creates pods with the new image and exposes the application through the preview service
@@ -62,14 +78,19 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. kubectl get service guestbook-bluegreen-active -n guestbook-bluegreen
    to view the application in browser <external-ip>:8080/index.html
 
-## Rollout new revisions
+## Rollout new revisions using BlueGreen
 
-1. Setup connections in Release for the Unix host with kubectl, and the Kubernetes clusters, one for Canary and the other for BlueGreen (Specify the created namespaces).
-1. Import templates from <link> into DAI Release
-1. setup environment variables for canary rollout
-	* canary-container: 
-	....
-	
-Run the template and complete the promotion of image
-
-*** To be continued after argo rollout tasks are modified to take in kubernetes connection itself
+This is pretty
+1. In Release, create Unix host connection. Specify a host which has the following
+	kubectl installed and confiured to connect to the desired cluster
+	kubectl argo rollouts plugin installed
+1. Create Kubectl Argo Rollouts connection and specify the kubectl path, namespace as guestbook-bluegreen and other fields or if required. 
+   System defaults from the unix host will be picked where not specified.
+1. Import the template for BlueGreen deployment found here <github>
+1. Create the following global variables in Release
+    * bluegreen.rollout-name - guestbook-canary-rollout
+    * bluegreen.container -name- guestbook-container
+    * bluegreen.prev-failed-image - None
+1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
+1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
+1. Assign and complete manual tasks where required. Choose to promote or abort rollout as desired.
