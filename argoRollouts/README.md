@@ -86,7 +86,7 @@ This is pretty similar to the canary template
     * kubectl argo rollouts plugin installed
 1. Create Kubectl Argo Rollouts connection and specify the kubectl path, namespace as guestbook-bluegreen and other fields or if required. 
    <br/>System defaults from the unix host will be picked where not specified.
-1. Import the template for BlueGreen deployment found  [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20Blue%20_%20Green%20Deployment.xlr)
+1. Import the template for BlueGreen deployment found  [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20BlueGreen%20Deployment.xlr)
 1. Create the following global variables in Release
     * bluegreen.rollout-name - guestbook-canary-rollout
     * bluegreen.container -name- guestbook-container
