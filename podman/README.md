@@ -12,13 +12,68 @@ Use the manifests to perform podman deployments.
 
 1. Start the API service with the following command in the System containing podman server "podman system service tcp:localhost:8081 --log-level=debug --time=0"
 
+## How to Create Podman Infrastructure CI
+
+1. Download the "XL CLI" file from the "https://dist.xebialabs.com/public/xl-cli/22.2.1" dist website.
+2. Create a new file with the below file content, In the **podmanHost**, specify the podman host which is created once the API service is started.
+
+**infrastructure.yaml**
+```yaml
+apiVersion: xl-deploy/v1
+kind: Infrastructure
+spec:
+- name: Infrastructure/localhost
+  type: podman.Engine
+  podmanHost: http://127.0.0.1:8081
+```
+3. Run the command "xl apply -f infrastructure.yaml" from the location of xl cli application, which should create the required Infrastructure.
+
+## How to Create Podman Environment CI
+
+1. Download the "XL CLI" file from the "https://dist.xebialabs.com/public/xl-cli/22.2.1" dist website.
+2. Create a new file with the below file content with file name "environment.yaml", In the **members**, specify the podman Infrastructure which was created in the above section.
+
+**environment.yaml**
+```yaml
+apiVersion: xl-deploy/v1
+kind: Environments
+spec:
+- name: Environments/localEnv
+  type: udm.Environment
+  members:
+  - Infrastructure/localhost
+```
+3. Run the command "xl apply -f envrionment.yaml" from the location of xl cli application, which should create the required Environment.
+
+## How to Import Podman Application from dar file
+
+1. Download the sample dar.
+2. Unpack the Sample dar using uncompressor tools such as "7-Zip" or "Winrar".
+3. Edit the `deployit-manifest.xml` with the below mentioned manifest xml content and follow below steps to import the dar package.
+4. You can import a deployment package from an external storage location, your computer, or the Deploy server.
+
+### To import a package:
+1. In the left pane, hover over Applications, click Explorer action menu, then select Import.
+2. Select one of three options:
+3. From URL:
+    a.Enter the URL.
+    b.If the URL requires authentication, enter the required user name and password.
+    c.Click Import.
+4. From your computer:
+    a.Click Browse and locate the package on your computer.
+    b.Click Import.
+5. From Deploy server:
+    a.Select the package from the list.
+    b.Click Import.
+
 ## How to Create a new `Podman.Engine` Infrastructure and Test Connection
 
-1. Create an Infrastructure of type `Podman.Engine` by hovering over the `Infrastructure`, click ![Explorer action menu](images/menu_three_dots.png) > **New**, and then select **New**, and then select **Podman** then select **Engine**.
-2. In the **Name** field, specify the name of the Configuration Item that will be created.
-3. In the **Podman Host**, specify the podman host which is created once the API service is started.
-4. Click **save**.
-5. Once the Configuration Item is created, Hover over the Configuration Item, click ![Explorer action menu](images/menu_three_dots.png) > **Check Connection** > **Execute** to Test Connection.
+1  Create an Infrastructure using the xl cli by refering the above section or follow the below steps to create infrastructure manually.
+2. Create an Infrastructure of type `Podman.Engine` by hovering over the `Infrastructure`, click ![Explorer action menu](images/menu_three_dots.png) > **New**, and then select **New**, and then select **Podman** then select **Engine**.
+3. In the **Name** field, specify the name of the Configuration Item that will be created.
+4. In the **Podman Host**, specify the podman host which is created once the API service is started.
+5. Click **save**.
+6. Once the Configuration Item is created, Hover over the Configuration Item, click ![Explorer action menu](images/menu_three_dots.png) > **Check Connection** > **Execute** to Test Connection.
 
 ## How to Deploy a podman Container
 
