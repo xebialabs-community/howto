@@ -1,6 +1,0 @@
-apiVersion: xl-deploy/v1
-kind: Infrastructure
-spec:
-- name: Infrastructure/localhost
-  type: podman.Engine
-  podmanHost: http://127.0.0.1:8081
