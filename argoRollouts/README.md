@@ -47,7 +47,7 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. Create the following global variables in Release
     * canary.rollout-name - guestbook-canary-rollout
     * canary.container-name- guestbook-container
-    * canary.prev-failed-image - None
+    * canary.current-image - xldevdocker/guestbook:blue
 1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
 1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
 1. Assign and complete manual tasks where required. Choose to promote or abort rollout as desired.
@@ -90,7 +90,7 @@ This is pretty similar to the canary template
 1. Create the following global variables in Release
     * bluegreen.rollout-name - guestbook-canary-rollout
     * bluegreen.container-name- guestbook-container
-    * bluegreen.prev-failed-image - None
+    * bluegreen.current-image - xldevdocker/guestbook:blue
 1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
 1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
 1. Assign and complete manual tasks where required. Choose to promote or abort rollout as desired.
