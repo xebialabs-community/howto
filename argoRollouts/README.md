@@ -46,7 +46,7 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. Import the template for Canary deployment from [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20Canary%20Deployment.xlr)
 1. Create the following global variables in Release
     * canary.rollout-name - guestbook-canary-rollout
-    * canary.container -name- guestbook-container
+    * canary.container-name- guestbook-container
     * canary.prev-failed-image - None
 1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
 1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
@@ -89,7 +89,7 @@ This is pretty similar to the canary template
 1. Import the template for BlueGreen deployment found  [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20BlueGreen%20Deployment.xlr)
 1. Create the following global variables in Release
     * bluegreen.rollout-name - guestbook-canary-rollout
-    * bluegreen.container -name- guestbook-container
+    * bluegreen.container-name- guestbook-container
     * bluegreen.prev-failed-image - None
 1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
 1. To update a new image, create New Release, specify the new image xldevdocker/guestbook:green and start it. 
