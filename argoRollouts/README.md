@@ -9,7 +9,7 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 2. AWS Load Balancer Controller (https://www.eksworkshop.com/beginner/180_fargate/prerequisites-for-alb/)
 3. Linkerd (https://linkerd.io/2.11/getting-started/)
 4. Argo rollouts setup in the EKS cluster(https://argoproj.github.io/argo-rollouts/) and argo rollouts kubectl plugin installed in a Unix host.
-5. DAI Release with xlr-argo-rollouts-integration installed
+5. DAI Release with xlr-argo-rollouts-integration & xlr-kubernetes-integration installed
 
 ## Initial Canary Rollout Setup in K8s
 
