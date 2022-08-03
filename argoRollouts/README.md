@@ -88,7 +88,7 @@ This is pretty similar to the canary template
    <br/>System defaults from the unix host will be picked where not specified.
 1. Import the template for BlueGreen deployment found  [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20BlueGreen%20Deployment.xlr)
 1. Create the following global variables in Release
-    * blue-green.rollout-name - guestbook-canary-rollout
+    * blue-green.rollout-name - guestbook-bluegreen-rollout
     * blue-green.container-name- guestbook-container
     * blue-green.current-image - xldevdocker/guestbook:blue
 1. Make sure that the rollout tasks in the template have the 'Rollout Config' and 'Host' selected.
