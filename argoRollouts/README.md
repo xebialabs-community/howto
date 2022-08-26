@@ -13,6 +13,10 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 
 ## Initial Canary Rollout Setup in K8s
 
+Download Initial setup template from [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20Canary%20Deployment.xlr) and run the template to setup Canary namespace and deployment.
+
+Alternatively follow the steps to setup the deployment
+
 1. kubectl create namespace guestbook-canary
    <br/>&rarr; creates a namespace 'guestbook-canary'
 1. kubectl apply -f https://raw.githubusercontent.com/xebialabs-community/howto/master/argoRollouts/manifests/guestbook-canary-service.yaml -n guestbook-canary
@@ -25,6 +29,17 @@ Use the templates and manifests to perform bluegreen and canary deployments.
    <br/>&rarr; dashboard shows the pods and trafic split between the two services, canary and stable under the guestbook-canary namespace
 1. kubectl get service guestbook-stable -n guestbook-canary
    <br/>&rarr; to view the application in browser <external-ip>:8080/index.html
+   
+    ### Setup the dashboard for the Canary deployment.
+    * Add custom dashboard from the **Dashboards** menu.
+    * Click **Configure** > **Add tile** > **ArgoRollouts Canary details**.
+    * Click the gear icon to configure the added tile.
+    * In the **Title** field, enter the name for the tile.
+    * In the **Rollouts Config** field, select the existing argo rollout configuration.
+    * In the **Namespace** field, enter the name of the namespace - 'guestbook-canary'.
+    * In the **Rollout Name** field, enter the name of the rollout - 'guestbook-canary-rollout'.    
+    
+
 
 ## Update Canary Rollout with a new Image Manually
 
@@ -54,6 +69,10 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 
 ## Initial BlueGreen Rollout Setup in K8s
 
+   Download Initial setup template from [here](https://github.com/xebialabs-community/howto/raw/master/argoRollouts/templates/Argo%20Rollouts_%20Canary%20Deployment.xlr) and run the template to setup Blue Green namespace and deployment.
+
+Alternatively follow the steps to setup the deployment
+   
 1. kubectl create namespace guestbook-bluegreen
    <br/>&rarr; creates a namespace 'guestbook-bluegreen'
 1. kubectl apply -f https://raw.githubusercontent.com/xebialabs-community/howto/master/argoRollouts/manifests/guestbook-bluegreen-service.yaml -n guestbook-bluegreen
@@ -67,6 +86,15 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 1. kubectl get service guestbook-bluegreen-active -n guestbook-bluegreen
    <br/>&rarr; to view the application in browser <external-ip>:8080/index.html
 
+   ### Setup the dashboard for the BlueGreen deployment.
+   * Add custom dashboard from the **Dashboards** menu.
+   * Click **Configure** > **Add tile** > **ArgoRollouts Blue Green details**.
+   * Click the gear icon to configure the added tile.
+   * In the **Title** field, enter the name for the tile.
+   * In the **Rollouts Config** field, select an existing argo rollout configuration.
+   * In the **Namespace** field, enter the name of the namespace - 'guestbook-bluegreen'.
+   * In the **Rollout Name** field, enter the name of the rollout - 'guestbook-bluegreen-rollout'.
+   
 ## Update BlueGreen Rollout with a new Image Manually
 
 1. kubectl argo rollouts set image guestbook-bluegreen-rollout guestbook-container=xldevdocker/guestbook:green -n guestbook-bluegreen
