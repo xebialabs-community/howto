@@ -12,7 +12,7 @@ Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
 
 ## Initial Setup
 
-![Initial Setup](../images/intial_setup.png)
+![Initial Setup](images/intial_setup.png)
 
 1. Create ASG in AWS with intial Desired capacity as 0.
 1. Create an EC2 instance in the public subnet with a public ip and capture the authentication details.
@@ -25,7 +25,7 @@ Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
 1. Create API Gateway method with Http Endpoint as Deploy’s URL and authentication
 1. Create an EventBridge rule in AWS to listen to Successful ASG EC2 Instance Launch and Terminations. Select the above created API as target
 
-![API Gateway Setup](../images/api_gateway.PNG)
+![API Gateway Setup](images/api_gateway.png)
 
 ## First Deployment
 
@@ -36,7 +36,7 @@ Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
 1. Make deployments to the environment.
 1. File transfers and command executions will happen through the Jumpstation over SSH
 
-![First Deployment](../images/first_deployment.PNG)
+![First Deployment](images/first_deployment.png)
 
 ## Scale Up and Scale Down
 
@@ -45,4 +45,4 @@ Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
 1. All current deployments to the environment (with ASG’s name) are identified and retriggered.
 1. On scale down the terminated instance is removed from Infra and Environment
 
-![Automatic Deployments](../images/automatic_deployments.png)
+![Automatic Deployments](images/automatic_deployments.png)
