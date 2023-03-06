@@ -12,7 +12,7 @@ Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
 
 ## Initial Setup
 
-![Initial Setup](images/intial_setup.png)
+![Initial Setup](images/initial_setup.png)
 
 1. Create ASG in AWS with intial Desired capacity as 0.
 1. Create an EC2 instance in the public subnet with a public ip and capture the authentication details.
