@@ -1,7 +1,7 @@
 # Deployment to AWS AutoScalingGroups using Digital.ai Deploy (WIP)
 
 Use Digital.ai Deploy to make deployments to AWS AutoScalingGroup Instances.
-
+EC2 instances in ASG are dynamic and with a private IP (no pulbic IP).
 
 ## How it Works
 
