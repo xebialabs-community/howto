@@ -1,16 +1,16 @@
-# Exported from:        http://LAPTOP-E5FJSD06:5517/
-# Release version:      23.1.0-327.423
-# Date created:         Mon Mar 27 23:40:38 IST 2023
+# Exported from:        http://localhost:5516/
+# Release version:      23.1.0-328.113
+# Date created:         Tue Mar 28 12:05:18 UTC 2023
 
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Deploy Workflows
+  home: DeployWorkflows
 spec:
 - template: Aws Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -29,8 +29,8 @@ spec:
       ciType: aws.Cloud
       jsonDescriptor: |-
         {
-            "accesskey":${accesskey},
-            "accessSecret":${accessSecret}
+            "accesskey":"${accesskey}",
+            "accessSecret":"${accessSecret}"
         }
       addToEnvironment: true
       envID: "Environments/${environment-name}"
@@ -100,8 +100,8 @@ spec:
     value: "1.0"
   riskProfile: Default risk profile
 - template: Azure Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -121,10 +121,10 @@ spec:
       jsonDescriptor: |-
         {
             "authMethod":"directory-application-and-service-principal",
-            "subscriptionId":${subscription-id},
-            "tenantId":${tenant-id},
-            "clientId":${client-id},
-            "clientKey":${client-secret}
+            "subscriptionId":"${subscription-id}",
+            "tenantId":"${tenant-id}",
+            "clientId":"${client-id}",
+            "clientKey":"${client-secret}"
         }
       addToEnvironment: true
       envID: "Environments/${environment-name}"
@@ -164,8 +164,8 @@ spec:
       ciType: azure.ResourceGroupSpec
       jsonDescriptor: |-
         {
-            "location":${resourcegroup-location},
-            "resourceGroupName":${resourcegroup-name}
+            "location":"${resourcegroup-location}",
+            "resourceGroupName":"${resourcegroup-name}"
         }
     color: '#3d6c9e'
   variables:
@@ -183,26 +183,26 @@ spec:
     value: azure-cloud
   - type: xlrelease.StringVariable
     key: client-id
-    value: '"client-id"'
+    value: client-id
   - type: xlrelease.StringVariable
     key: client-secret
-    value: '"client-secret"'
+    value: client-secret
   - type: xlrelease.StringVariable
     key: subscription-id
-    value: '"subscription-id"'
+    value: subscription-id
   - type: xlrelease.StringVariable
     key: tenant-id
-    value: '"tenant-id"'
+    value: tenant-id
   - type: xlrelease.StringVariable
     key: resourcegroup-location
-    value: '"East US"'
+    value: East US
   - type: xlrelease.StringVariable
     key: resourcegroup-name
-    value: '"resourcegroup-name"'
+    value: resourcegroup-name
   riskProfile: Default risk profile
 - template: Tomcat on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -222,16 +222,16 @@ spec:
       jsonDescriptor: |-
         {
             "stagingDirectoryPath":"",
-            "sudoUsername":${sudo-username},
+            "sudoUsername":"${sudo-username}",
             "suUsername":"",
             "suPassword":"",
-            "os":${os},
+            "os":"${os}",
             "connectionType":"SUDO",
-            "address":${address},
-            "port":${port},
-            "username":${ssh-username},
+            "address":"${address}",
+            "port":"${port}",
+            "username":"${ssh-username}",
             "password":"",
-            "privateKeyFile":${ssh-privatekey},
+            "privateKeyFile":"${ssh-privatekey}",
             "passphrase":""
         }
     - name: Check Remote Host Connection
@@ -253,11 +253,11 @@ spec:
       ciType: tomcat.Server
       jsonDescriptor: |-
         {
-            "home":"/opt/tomcat",
-            "startCommand":"systemctl start tomcat",
-            "stopCommand":"systemctl stop tomcat",
-            "statusCommand":"systemctl status tomcat",
-            "statusCommandExpectedOutput":"active (running)",
+            "home":"${tomcat-home}",
+            "startCommand":"${tomcat-start-command}",
+            "stopCommand":"${tomcat-stop-command}",
+            "statusCommand":"${tomcat-status-command}",
+            "statusCommandExpectedOutput":"${tomcat-status-exptected-output}",
             "startWaitTime":"0",
             "stopWaitTime":"0",
             "serverStartupTime":"0",
@@ -310,12 +310,12 @@ spec:
       ciType: tomcat.DataSourceSpec
       jsonDescriptor: |-
         {
-            "context":"sample-context",
-            "jndiName":"sample-jndiName",
-            "driverClassName":"sample-driverClassName",
-            "url":"sample-url",
-            "username":"sample-username",
-            "password":"sample-password"
+            "context":"${datasource-context}",
+            "jndiName":"${jndi-name}",
+            "driverClassName":"${database-driver-class-name}",
+            "url":"${database url}",
+            "username":"${db-username}",
+            "password":"${db-password}"
         }
     color: '#3d6c9e'
   variables:
@@ -327,32 +327,56 @@ spec:
     value: tomcat-host
   - type: xlrelease.StringVariable
     key: address
-    value: '"1.2.3.4"'
+    value: 1.2.3.4
   - type: xlrelease.StringVariable
     key: os
-    value: '"UNIX"'
+    value: UNIX
   - type: xlrelease.StringVariable
     key: port
-    value: '"22"'
+    value: "22"
   - type: xlrelease.StringVariable
     key: ssh-privatekey
-    value: '"private-key-path"'
+    value: private-key-path
   - type: xlrelease.StringVariable
     key: ssh-username
-    value: '"ssh-username"'
+    value: ssh-username
   - type: xlrelease.StringVariable
     key: sudo-username
-    value: '"sudo-username"'
+    value: sudo-username
   - type: xlrelease.StringVariable
     key: application-name
     value: tomcat-app
   - type: xlrelease.StringVariable
     key: package-name
     value: "1.0"
+  - type: xlrelease.StringVariable
+    key: tomcat-home
+  - type: xlrelease.StringVariable
+    key: tomcat-start-command
+  - type: xlrelease.StringVariable
+    key: tomcat-status-command
+  - type: xlrelease.StringVariable
+    key: tomcat-status-exptected-output
+  - type: xlrelease.StringVariable
+    key: tomcat-stop-command
+  - type: xlrelease.StringVariable
+    key: jndi-context
+  - type: xlrelease.StringVariable
+    key: database url
+  - type: xlrelease.StringVariable
+    key: database-driver-class-name
+  - type: xlrelease.StringVariable
+    key: datasource-context
+  - type: xlrelease.StringVariable
+    key: db-password
+  - type: xlrelease.StringVariable
+    key: db-username
+  - type: xlrelease.StringVariable
+    key: jndi-name
   riskProfile: Default risk profile
 - template: Websphere on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-02-14T09:00:00+05:30
-  dueDate: 2023-02-14T10:00:00+05:30
+  scheduledStartDate: 2023-02-14T03:30:00Z
+  dueDate: 2023-02-14T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
