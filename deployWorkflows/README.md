@@ -30,9 +30,9 @@ In Digital.ai Release,
 6. Specify the branch and specify the Repository path as 'deployWorkflows' and save.
 ![configure](images/gitops-versioning.png)
 7. Select the latest version displayed and click 'Apply this version'.
-![apply](images/gitops-versioning-versions.png)
+![apply](images/gitops-versioning-versions.PNG)
 8. The workflow templates are populated in the Templates section.
-![templates](images/templates.png)
+![templates](images/templates.PNG)
 
 ### Running Workflows
 
