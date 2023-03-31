@@ -1,6 +1,6 @@
 # Exported from:        http://localhost:5516/
 # Release version:      23.1.0-331.113
-# Date created:         Fri Mar 31 08:22:14 UTC 2023
+# Date created:         Fri Mar 31 09:24:33 UTC 2023
 
 ---
 apiVersion: xl-release/v1
@@ -398,7 +398,7 @@ spec:
       jsonDescriptor: |-
         {
             "stagingDirectoryPath":"",
-            "sudoUsername":${sudo-username},
+            "sudoUsername":"${sudo-username}",
             "suUsername":"",
             "suPassword":"",
             "os":"${os}",
@@ -406,7 +406,7 @@ spec:
             "address":"${address}",
             "port":22,
             "username":"${ssh-username}",
-            "password":"${ssh-password}",,
+            "password":"${ssh-password}",
             "privateKeyFile":"",
             "passphrase":""
         }
@@ -496,9 +496,6 @@ spec:
   - type: xlrelease.StringVariable
     key: address
     value: 1.2.3.4
-  - type: xlrelease.StringVariable
-    key: port
-    value: "22"
   - type: xlrelease.StringVariable
     key: connection-type
     value: SUDO
