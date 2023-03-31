@@ -1,12 +1,12 @@
 # Exported from:        http://localhost:5516/
-# Release version:      23.1.0-328.113
-# Date created:         Tue Mar 28 12:05:18 UTC 2023
+# Release version:      23.1.0-331.113
+# Date created:         Fri Mar 31 08:22:14 UTC 2023
 
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: DeployWorkflows
+  home: workflows
 spec:
 - template: Aws Application Setup
   scheduledStartDate: 2023-03-23T03:30:00Z
@@ -234,6 +234,8 @@ spec:
             "privateKeyFile":"${ssh-privatekey}",
             "passphrase":""
         }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
     - name: Check Remote Host Connection
       type: deploy.ControlTask
       capabilities:
@@ -396,16 +398,16 @@ spec:
       jsonDescriptor: |-
         {
             "stagingDirectoryPath":"",
-            "sudoUsername":"sudo-username",
+            "sudoUsername":${sudo-username},
             "suUsername":"",
             "suPassword":"",
-            "os":"UNIX",
-            "connectionType":"SUDO",
-            "address":"1.2.3.4",
+            "os":"${os}",
+            "connectionType":"${connection-type}",
+            "address":"${address}",
             "port":22,
-            "username":"ssh-username",
-            "password":"",
-            "privateKeyFile":123,
+            "username":"${ssh-username}",
+            "password":"${ssh-password}",,
+            "privateKeyFile":"",
             "passphrase":""
         }
     - name: Check Remote Host Connection
@@ -427,9 +429,9 @@ spec:
       ciType: was.DeploymentManager
       jsonDescriptor: |-
         {
-            "wasHome": "/opt/IBM/WebSphere/AppServer-1/profiles/Dmgr01",
-            "username": "admin",
-            "password": "admin",
+            "wasHome": "${was-home}",
+            "username": "${was-username}",
+            "password": "${was-password}",
             "version": "WAS_90"
         }
       addToEnvironment: true
@@ -498,6 +500,9 @@ spec:
     key: port
     value: "22"
   - type: xlrelease.StringVariable
+    key: connection-type
+    value: SUDO
+  - type: xlrelease.StringVariable
     key: ssh-username
     value: ssh-username
   - type: xlrelease.StringVariable
@@ -539,8 +544,6 @@ spec:
   - type: xlrelease.StringVariable
     key: jaas-username
     value: admin
-  - type: xlrelease.StringVariable
-    key: ssh-privatekey
   riskProfile: Default risk profile
 - notifications:
   - notification: TASK_OVERDUE
