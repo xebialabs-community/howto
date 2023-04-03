@@ -1,0 +1,662 @@
+# Exported from:        http://localhost:5516/
+# Release version:      23.1.0-beta.10
+# Date created:         Mon Apr 03 10:39:56 UTC 2023
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: workflows
+spec:
+- template: Aws Application Setup
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
+  phases:
+  - phase: Setup Infra and Env
+    tasks:
+    - name: Create Environment
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Environments/${environment-name}"
+      ciType: udm.Environment
+      jsonDescriptor: "{}"
+    - name: Configure AWS Cloud Connection
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${awscloud-identifier}"
+      ciType: aws.Cloud
+      jsonDescriptor: |-
+        {
+            "accesskey":"${accesskey}",
+            "accessSecret":"${accessSecret}"
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Check AWS Connection
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      ciId: "Infrastructure/${awscloud-identifier}"
+      taskName: checkConnection
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+    color: '#3d6c9e'
+  - phase: Setup Application
+    tasks:
+    - name: Create Application
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}"
+      ciType: udm.Application
+      jsonDescriptor: "{}"
+    - name: Create Deployment Package
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}"
+      ciType: udm.DeploymentPackage
+      jsonDescriptor: "{}"
+    - name: Create Sample Lambda Deployment from S3
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}/sample-lambda"
+      ciType: aws.lambda.S3Spec
+      jsonDescriptor: |-
+        {
+            "functionName":"functionName",
+            "bucketName":"bucketName",
+            "s3Key":"s3Key",
+            "region":"us-east-2",
+            "runtime":"java8",
+            "role":"java8",
+            "handler":"sample-function"
+        }
+    color: '#3d6c9e'
+  variables:
+  - type: xlrelease.StringVariable
+    key: environment-name
+    value: aws-env
+  - type: xlrelease.StringVariable
+    key: awscloud-identifier
+    value: aws-cloud
+  - type: xlrelease.StringVariable
+    key: accessSecret
+    value: '"accessSecret"'
+  - type: xlrelease.StringVariable
+    key: accesskey
+    value: '"accesskey"'
+  - type: xlrelease.StringVariable
+    key: application-name
+    value: aws-app
+  - type: xlrelease.StringVariable
+    key: package-name
+    value: "1.0"
+  riskProfile: Default risk profile
+- template: Azure Application Setup
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
+  phases:
+  - phase: Setup Infra and Env
+    tasks:
+    - name: Create Environment
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Environments/${environment-name}"
+      ciType: udm.Environment
+      jsonDescriptor: "{}"
+    - name: Configure Azure Connection
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${azurecloud-identifier}"
+      ciType: azure.Cloud
+      jsonDescriptor: |-
+        {
+            "authMethod":"directory-application-and-service-principal",
+            "subscriptionId":"${subscription-id}",
+            "tenantId":"${tenant-id}",
+            "clientId":"${client-id}",
+            "clientKey":"${client-secret}"
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Check Azure Connection
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      ciId: "Infrastructure/${azurecloud-identifier}"
+      taskName: checkConnection
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+    color: '#3d6c9e'
+  - phase: Setup Application
+    tasks:
+    - name: Create Application
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}"
+      ciType: udm.Application
+      jsonDescriptor: "{}"
+    - name: Create Deployment Package
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}"
+      ciType: udm.DeploymentPackage
+      jsonDescriptor: "{}"
+    - name: Create Sample Lambda Deployment from S3
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}/sample-resource-group"
+      ciType: azure.ResourceGroupSpec
+      jsonDescriptor: |-
+        {
+            "location":"${resourcegroup-location}",
+            "resourceGroupName":"${resourcegroup-name}"
+        }
+    color: '#3d6c9e'
+  variables:
+  - type: xlrelease.StringVariable
+    key: environment-name
+    value: azure-env
+  - type: xlrelease.StringVariable
+    key: application-name
+    value: azure-app
+  - type: xlrelease.StringVariable
+    key: package-name
+    value: "1.0"
+  - type: xlrelease.StringVariable
+    key: azurecloud-identifier
+    value: azure-cloud
+  - type: xlrelease.StringVariable
+    key: client-id
+    value: client-id
+  - type: xlrelease.StringVariable
+    key: client-secret
+    value: client-secret
+  - type: xlrelease.StringVariable
+    key: subscription-id
+    value: subscription-id
+  - type: xlrelease.StringVariable
+    key: tenant-id
+    value: tenant-id
+  - type: xlrelease.StringVariable
+    key: resourcegroup-location
+    value: East US
+  - type: xlrelease.StringVariable
+    key: resourcegroup-name
+    value: resourcegroup-name
+  riskProfile: Default risk profile
+- template: GCP Application Setup
+  scheduledStartDate: 2023-03-31T03:30:00Z
+  phases:
+  - phase: Setup Env and Infra
+    tasks:
+    - name: Create Environment
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      server: DeployServer
+      ciID: "Environments/${environment_identifier}"
+      ciType: udm.Environment
+      jsonDescriptor: "{}"
+    - name: Create Google Account Cloud Infra
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      server: DeployServer
+      ciID: "Infrastructure/${google_account_cloud_name}"
+      ciType: google.AccountCloud
+      jsonDescriptor: |-
+        {
+            "projectId": "${gcp_project_id}",
+            "clientEmail": "${gcp_client_email}",
+            "privateKey": "${private_key}"
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment_identifier}"
+    - name: Check Connection of Google account
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      server: DeployServer
+      ciId: "Infrastructure/${google_account_cloud_name}"
+      taskName: checkConnection
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+  - phase: Setup Application
+    tasks:
+    - name: Create Application
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      server: DeployServer
+      ciID: "Applications/${application_identifier}"
+      ciType: udm.Application
+      jsonDescriptor: "{}"
+    - name: Create Deployment Package
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      server: DeployServer
+      ciID: "Applications/${application_identifier}/${application_version}"
+      ciType: udm.DeploymentPackage
+    - name: Create Google Instance spec
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      server: DeployServer
+      ciID: "Applications/${application_identifier}/${application_version}/${instance_spec_name}"
+      ciType: googlecloud.compute.InstanceSpec
+      jsonDescriptor: |-
+        {
+            "zone": "${zone}",
+            "machine": "${machine}",
+            "imageProject": "${image_project}",
+            "image": "${image}",
+            "waitOnCreate": "${wait_time_for_create}",
+            "waitOnDestroy": "${wait_time_for_destroy}"
+        }
+    color: '#3d6c9e'
+  variables:
+  - type: xlrelease.StringVariable
+    key: environment_identifier
+    value: gcp_env
+  - type: xlrelease.StringVariable
+    key: google_account_cloud_name
+    value: google_cloud
+  - type: xlrelease.StringVariable
+    key: gcp_project_id
+    value: gcp_project_id
+  - type: xlrelease.StringVariable
+    key: private_key
+    value: gcp_private_key
+  - type: xlrelease.StringVariable
+    key: application_identifier
+    value: gcp_app
+  - type: xlrelease.StringVariable
+    key: application_version
+    value: app_version
+  - type: xlrelease.StringVariable
+    key: instance_spec_name
+    value: gcp_instance_spec_name
+  - type: xlrelease.StringVariable
+    key: machine
+    value: machine
+  - type: xlrelease.StringVariable
+    key: image_project
+    value: image_project
+  - type: xlrelease.StringVariable
+    key: zone
+    value: zone
+  - type: xlrelease.StringVariable
+    key: image
+    value: image
+  - type: xlrelease.StringVariable
+    key: wait_time_for_create
+    value: wait_for_create
+  - type: xlrelease.StringVariable
+    key: wait_time_for_destroy
+    value: wait_time_for_destroy
+  - type: xlrelease.StringVariable
+    key: gcp_client_email
+    value: gcp_client_email
+  riskProfile: Default risk profile
+- template: Tomcat on Remote SSH Host - Application Setup
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
+  phases:
+  - phase: Setup Infra and Env
+    tasks:
+    - name: Create Environment
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Environments/${environment-name}"
+      ciType: udm.Environment
+      jsonDescriptor: "{}"
+    - name: Configure Remote Host
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}"
+      ciType: overthere.SshHost
+      jsonDescriptor: |-
+        {
+            "stagingDirectoryPath":"",
+            "sudoUsername":"${sudo-username}",
+            "suUsername":"",
+            "suPassword":"",
+            "os":"${os}",
+            "connectionType":"SUDO",
+            "address":"${address}",
+            "port":"${port}",
+            "username":"${ssh-username}",
+            "password":"",
+            "privateKeyFile":"${ssh-privatekey}",
+            "passphrase":""
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Check Remote Host Connection
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      ciId: "Infrastructure/${host-identifier}"
+      taskName: checkConnection
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+    - name: Configure Tomcat Server
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/tomcat-server"
+      ciType: tomcat.Server
+      jsonDescriptor: |-
+        {
+            "home":"${tomcat-home}",
+            "startCommand":"${tomcat-start-command}",
+            "stopCommand":"${tomcat-stop-command}",
+            "statusCommand":"${tomcat-status-command}",
+            "statusCommandExpectedOutput":"${tomcat-status-exptected-output}",
+            "startWaitTime":"0",
+            "stopWaitTime":"0",
+            "serverStartupTime":"0",
+            "serverShutdownTime":"0",
+            "tomcatRunningPort":""
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Check Tomcat Status
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      ciId: "Infrastructure/${host-identifier}/tomcat-server"
+      taskName: status
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+    - name: Configure Tomcat VirtualHost
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/tomcat-server/virtual-host"
+      ciType: tomcat.VirtualHost
+      jsonDescriptor: "{}"
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+  - phase: Setup Application
+    tasks:
+    - name: Setup Application
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}"
+      ciType: udm.Application
+      jsonDescriptor: "{}"
+    - name: Create Deployment Package
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/1.0"
+      ciType: udm.DeploymentPackage
+      jsonDescriptor: "{}"
+    - name: Create Sample Tomcat DataSourceSpec
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}/sample-datasource"
+      ciType: tomcat.DataSourceSpec
+      jsonDescriptor: |-
+        {
+            "context":"${datasource-context}",
+            "jndiName":"${jndi-name}",
+            "driverClassName":"${database-driver-class-name}",
+            "url":"${database url}",
+            "username":"${db-username}",
+            "password":"${db-password}"
+        }
+    color: '#3d6c9e'
+  variables:
+  - type: xlrelease.StringVariable
+    key: environment-name
+    value: tomcat-env
+  - type: xlrelease.StringVariable
+    key: host-identifier
+    value: tomcat-host
+  - type: xlrelease.StringVariable
+    key: address
+    value: 1.2.3.4
+  - type: xlrelease.StringVariable
+    key: os
+    value: UNIX
+  - type: xlrelease.StringVariable
+    key: port
+    value: "22"
+  - type: xlrelease.StringVariable
+    key: ssh-privatekey
+    value: private-key-path
+  - type: xlrelease.StringVariable
+    key: ssh-username
+    value: ssh-username
+  - type: xlrelease.StringVariable
+    key: sudo-username
+    value: sudo-username
+  - type: xlrelease.StringVariable
+    key: application-name
+    value: tomcat-app
+  - type: xlrelease.StringVariable
+    key: package-name
+    value: "1.0"
+  - type: xlrelease.StringVariable
+    key: tomcat-home
+  - type: xlrelease.StringVariable
+    key: tomcat-start-command
+  - type: xlrelease.StringVariable
+    key: tomcat-status-command
+  - type: xlrelease.StringVariable
+    key: tomcat-status-exptected-output
+  - type: xlrelease.StringVariable
+    key: tomcat-stop-command
+  - type: xlrelease.StringVariable
+    key: jndi-context
+  - type: xlrelease.StringVariable
+    key: database url
+  - type: xlrelease.StringVariable
+    key: database-driver-class-name
+  - type: xlrelease.StringVariable
+    key: datasource-context
+  - type: xlrelease.StringVariable
+    key: db-password
+  - type: xlrelease.StringVariable
+    key: db-username
+  - type: xlrelease.StringVariable
+    key: jndi-name
+  riskProfile: Default risk profile
+- template: Websphere on Remote SSH Host - Application Setup
+  scheduledStartDate: 2023-02-14T03:30:00Z
+  dueDate: 2023-02-14T04:30:00Z
+  phases:
+  - phase: Setup Infra and Env
+    tasks:
+    - name: Create Environment
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Environments/${environment-name}"
+      ciType: udm.Environment
+      jsonDescriptor: "{}"
+    - name: Configure Remote Host
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}"
+      ciType: overthere.SshHost
+      jsonDescriptor: |-
+        {
+            "stagingDirectoryPath":"",
+            "sudoUsername":"${sudo-username}",
+            "suUsername":"",
+            "suPassword":"",
+            "os":"${os}",
+            "connectionType":"${connection-type}",
+            "address":"${address}",
+            "port":22,
+            "username":"${ssh-username}",
+            "password":"${ssh-password}",
+            "privateKeyFile":"",
+            "passphrase":""
+        }
+    - name: Check Remote Host Connection
+      type: deploy.ControlTask
+      capabilities:
+      - remote
+      ciId: "Infrastructure/${host-identifier}"
+      taskName: checkConnection
+      numberOfContinueRetrials: 0
+      pollingInterval: 10
+      numberOfPollingTrials: 0
+      displayStepLogs: true
+      connectionRetries: 10
+    - name: Configure Websphere Deployment Manager
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/${cell-name}"
+      ciType: was.DeploymentManager
+      jsonDescriptor: |-
+        {
+            "wasHome": "${was-home}",
+            "username": "${was-username}",
+            "password": "${was-password}",
+            "version": "WAS_90"
+        }
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Configure Websphere Node Agent
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}"
+      ciType: was.NodeAgent
+      jsonDescriptor: "{}"
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    - name: Configure Websphere Server
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Infrastructure/${host-identifier}/${cell-name}/${node-name}/${server-name}"
+      ciType: was.ManagedServer
+      jsonDescriptor: "{}"
+      addToEnvironment: true
+      envID: "Environments/${environment-name}"
+    color: '#3d6c9e'
+  - phase: Setup Application
+    tasks:
+    - name: Create Application
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}"
+      ciType: udm.Application
+      jsonDescriptor: "{}"
+    - name: Create Deployment Package
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}"
+      ciType: udm.DeploymentPackage
+      jsonDescriptor: "{}"
+    - name: Create Sample WAS JaasAliasSpec
+      type: deploy.CreateCI
+      capabilities:
+      - remote
+      ciID: "Applications/${application-name}/${package-name}/sample-jaasalias"
+      ciType: was.JaasAliasSpec
+      jsonDescriptor: |-
+        {
+        "username": "${jaas-username}",
+        "password": "${jaas-password}"
+        }
+    color: '#3d6c9e'
+  variables:
+  - type: xlrelease.StringVariable
+    key: environment-name
+    value: was-env
+  - type: xlrelease.StringVariable
+    key: host-identifier
+    value: was-host
+  - type: xlrelease.StringVariable
+    key: os
+    value: UNIX
+  - type: xlrelease.StringVariable
+    key: address
+    value: 1.2.3.4
+  - type: xlrelease.StringVariable
+    key: connection-type
+    value: SUDO
+  - type: xlrelease.StringVariable
+    key: ssh-username
+    value: ssh-username
+  - type: xlrelease.StringVariable
+    key: ssh-password
+    value: ssh-password
+  - type: xlrelease.StringVariable
+    key: sudo-username
+    value: sudo-username
+  - type: xlrelease.StringVariable
+    key: application-name
+    value: was-application
+  - type: xlrelease.StringVariable
+    key: package-name
+    value: "1.0"
+  - type: xlrelease.StringVariable
+    key: cell-name
+    value: was-cell-1
+  - type: xlrelease.StringVariable
+    key: was-home
+    value: /opt/IBM/WebSphere/AppServer-1/profiles/Dmgr01
+  - type: xlrelease.StringVariable
+    key: was-password
+    value: admin
+  - type: xlrelease.StringVariable
+    key: was-username
+    value: admin
+  - type: xlrelease.StringVariable
+    key: was-version
+    value: WAS_90
+  - type: xlrelease.StringVariable
+    key: node-name
+    value: was-node-1
+  - type: xlrelease.StringVariable
+    key: server-name
+    value: was-server-1
+  - type: xlrelease.StringVariable
+    key: jaas-password
+    value: admin
+  - type: xlrelease.StringVariable
+    key: jaas-username
+    value: admin
+  riskProfile: Default risk profile
