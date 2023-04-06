@@ -1,37 +1,42 @@
-# Exported from:        http://LAPTOP-E5FJSD06:5517/
-# Release version:      23.1.0-405.913
-# Date created:         Thu Apr 06 12:18:03 IST 2023
+# Exported from:        http://host.docker.internal:5516/
+# Release version:      23.1.0-406.1500
+# Date created:         Thu Apr 06 15:56:07 UTC 2023
 
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: workflows
+  home: Deploy Workflows
 spec:
 - template: Aws Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
     - name: Create Environment
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify AWS Connection Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - awscloud-identifier
       - accesskey
       - accessSecret
     - name: Configure AWS Cloud Connection
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${awscloud-identifier}"
       ciType: aws.Cloud
       jsonDescriptor: |-
@@ -43,8 +48,10 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Check AWS Connection
       type: deploy.ControlTask
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${awscloud-identifier}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -57,21 +64,26 @@ spec:
     tasks:
     - name: Create Application
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Create Deployment Package
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
     - name: Specify S3Lambda Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - functionName
       - bucketName
@@ -82,8 +94,10 @@ spec:
       - handler
     - name: Create Sample Lambda Deployment from S3
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}/sample-lambda"
       ciType: aws.lambda.S3Spec
       jsonDescriptor: |-
@@ -97,6 +111,8 @@ spec:
             "handler":"${handler} "
         }
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment-name
@@ -139,21 +155,24 @@ spec:
     value: handler
   riskProfile: Default risk profile
 - template: Azure Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
     - name: Create Environment
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify Azure Connection Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - subscription-id
       - tenant-id
@@ -161,8 +180,10 @@ spec:
       - client-secret
     - name: Configure Azure Connection
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${azurecloud-identifier}"
       ciType: azure.Cloud
       jsonDescriptor: |-
@@ -177,8 +198,10 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Check Azure Connection
       type: deploy.ControlTask
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${azurecloud-identifier}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -191,28 +214,35 @@ spec:
     tasks:
     - name: Create Application
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Create Deployment Package
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
     - name: Specify Resource Group Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - resourcegroup-name
       - resourcegroup-location
     - name: Create Sample Resource Group
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}/sample-resource-group"
       ciType: azure.ResourceGroupSpec
       jsonDescriptor: |-
@@ -221,6 +251,8 @@ spec:
             "resourceGroupName":"${resourcegroup-name}"
         }
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment-name
@@ -254,29 +286,34 @@ spec:
     value: resourcegroup-name
   riskProfile: Default risk profile
 - template: GCP Application Setup
-  scheduledStartDate: 2023-03-31T09:00:00+05:30
-  dueDate: 2023-03-31T10:00:00+05:30
+  scheduledStartDate: 2023-03-31T03:30:00Z
+  dueDate: 2023-03-31T04:30:00Z
   phases:
   - phase: Setup Env and Infra
     tasks:
     - name: Create Environment
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Environments/${environment_identifier}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify Google Account Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - gcp_project_id
       - gcp_client_email
       - private_key
     - name: Create Google Account Cloud Infra
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${google_account_cloud_name}"
       ciType: google.AccountCloud
       jsonDescriptor: |-
@@ -289,8 +326,10 @@ spec:
       envID: "Environments/${environment_identifier}"
     - name: Check Connection of Google account
       type: deploy.ControlTask
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${google_account_cloud_name}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -302,20 +341,25 @@ spec:
     tasks:
     - name: Create Application
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application_identifier}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Create Deployment Package
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application_identifier}/${application_version}"
       ciType: udm.DeploymentPackage
     - name: Specify Intance Spec Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - zone
       - machine
@@ -325,8 +369,10 @@ spec:
       - wait_time_for_destroy
     - name: Create Google Instance spec
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application_identifier}/${application_version}/${instance_spec_name}"
       ciType: googlecloud.compute.InstanceSpec
       jsonDescriptor: |-
@@ -339,6 +385,8 @@ spec:
             "waitOnDestroy": "${wait_time_for_destroy}"
         }
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment_identifier
@@ -384,21 +432,24 @@ spec:
     value: gcp_client_email
   riskProfile: Default risk profile
 - template: Tomcat on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-03-23T09:00:00+05:30
-  dueDate: 2023-03-23T10:00:00+05:30
+  scheduledStartDate: 2023-03-23T03:30:00Z
+  dueDate: 2023-03-23T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
     - name: Create Environment
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify Tomcat Host Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - sudo-username
       - os
@@ -408,8 +459,10 @@ spec:
       - ssh-privatekey
     - name: Configure Remote Host
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${host-identifier}"
       ciType: overthere.SshHost
       jsonDescriptor: |-
@@ -431,8 +484,10 @@ spec:
       envID: "Environments/${environment-name}"
     - name: Check Remote Host Connection
       type: deploy.ControlTask
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${host-identifier}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -443,6 +498,7 @@ spec:
     - name: Specify Tomcat Server Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - tomcat-home
       - tomcat-start-command
@@ -451,8 +507,10 @@ spec:
       - tomcat-status-exptected-output
     - name: Configure Tomcat Server
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${host-identifier}/tomcat-server"
       ciType: tomcat.Server
       jsonDescriptor: |-
@@ -474,6 +532,7 @@ spec:
       type: deploy.ControlTask
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${host-identifier}/tomcat-server"
       taskName: status
       numberOfContinueRetrials: 0
@@ -485,6 +544,7 @@ spec:
       type: deploy.CreateCI
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${host-identifier}/tomcat-server/virtual-host"
       ciType: tomcat.VirtualHost
       jsonDescriptor: "{}"
@@ -494,21 +554,26 @@ spec:
     tasks:
     - name: Setup Application
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Create Deployment Package
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/1.0"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
     - name: Specify Tomcat Datasource
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - jndi-name
       - datasource-context
@@ -518,8 +583,10 @@ spec:
       - db-password
     - name: Create Sample Tomcat DataSourceSpec
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}/sample-datasource"
       ciType: tomcat.DataSourceSpec
       jsonDescriptor: |-
@@ -532,6 +599,8 @@ spec:
             "password":"${db-password}"
         }
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment-name
@@ -580,33 +649,42 @@ spec:
     value: systemctl stop tomcat
   - type: xlrelease.StringVariable
     key: database url
+    value: database url
   - type: xlrelease.StringVariable
     key: database-driver-class-name
+    value: database-driver-class-name
   - type: xlrelease.StringVariable
     key: datasource-context
+    value: datasource-context
   - type: xlrelease.StringVariable
     key: db-password
+    value: db-password
   - type: xlrelease.StringVariable
     key: db-username
+    value: db-username
   - type: xlrelease.StringVariable
     key: jndi-name
+    value: jndi-name
   riskProfile: Default risk profile
 - template: Websphere on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-02-14T09:00:00+05:30
-  dueDate: 2023-02-14T10:00:00+05:30
+  scheduledStartDate: 2023-02-14T03:30:00Z
+  dueDate: 2023-02-14T04:30:00Z
   phases:
   - phase: Setup Infra and Env
     tasks:
     - name: Create Environment
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
     - name: Specify WAS Host Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - sudo-username
       - os
@@ -616,8 +694,10 @@ spec:
       - ssh-password
     - name: Configure Remote Host
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${host-identifier}"
       ciType: overthere.SshHost
       jsonDescriptor: |-
@@ -637,8 +717,10 @@ spec:
         }
     - name: Check Remote Host Connection
       type: deploy.ControlTask
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciId: "Infrastructure/${host-identifier}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -649,14 +731,17 @@ spec:
     - name: Specify WAS Deployment Manager Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - was-home
       - was-username
       - was-password
     - name: Configure Websphere Deployment Manager
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Infrastructure/${host-identifier}/${cell-name}"
       ciType: was.DeploymentManager
       jsonDescriptor: |-
@@ -691,28 +776,35 @@ spec:
     tasks:
     - name: Create Application
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}"
       ciType: udm.Application
       jsonDescriptor: "{}"
     - name: Create Deployment Package
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
     - name: Specify WAS JaasAliasSpec Parameters
       type: xlrelease.UserInputTask
       description: Please enter the required information below.
+      owner: admin
       variables:
       - jaas-password
       - jaas-username
     - name: Create Sample WAS JaasAliasSpec
       type: deploy.CreateCI
+      owner: admin
       capabilities:
       - remote
+      server: Deploy Server
       ciID: "Applications/${application-name}/${package-name}/sample-jaasalias"
       ciType: was.JaasAliasSpec
       jsonDescriptor: |-
@@ -721,6 +813,8 @@ spec:
         "password": "${jaas-password}"
         }
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment-name

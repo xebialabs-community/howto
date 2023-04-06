@@ -1,6 +1,6 @@
-# Exported from:        http://LAPTOP-E5FJSD06:5517/
-# Release version:      23.1.0-405.913
-# Date created:         Thu Apr 06 12:18:03 IST 2023
+# Exported from:        http://host.docker.internal:5516/
+# Release version:      23.1.0-406.1500
+# Date created:         Thu Apr 06 15:56:07 UTC 2023
 
 ---
 apiVersion: xl-release/v1
