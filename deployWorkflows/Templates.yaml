@@ -1,6 +1,6 @@
-# Exported from:        http://localhost:5516/
-# Release version:      23.1.0-beta.10
-# Date created:         Mon Apr 03 10:39:56 UTC 2023
+# Exported from:        http://LAPTOP-E5FJSD06:5517/
+# Release version:      23.1.0-405.913
+# Date created:         Thu Apr 06 12:18:03 IST 2023
 
 ---
 apiVersion: xl-release/v1
@@ -9,8 +9,8 @@ metadata:
   home: workflows
 spec:
 - template: Aws Application Setup
-  scheduledStartDate: 2023-03-23T03:30:00Z
-  dueDate: 2023-03-23T04:30:00Z
+  scheduledStartDate: 2023-03-23T09:00:00+05:30
+  dueDate: 2023-03-23T10:00:00+05:30
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -21,6 +21,13 @@ spec:
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
+    - name: Specify AWS Connection Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - awscloud-identifier
+      - accesskey
+      - accessSecret
     - name: Configure AWS Cloud Connection
       type: deploy.CreateCI
       capabilities:
@@ -62,6 +69,17 @@ spec:
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
+    - name: Specify S3Lambda Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - functionName
+      - bucketName
+      - s3Key
+      - region
+      - runtime
+      - role
+      - handler
     - name: Create Sample Lambda Deployment from S3
       type: deploy.CreateCI
       capabilities:
@@ -70,13 +88,13 @@ spec:
       ciType: aws.lambda.S3Spec
       jsonDescriptor: |-
         {
-            "functionName":"functionName",
-            "bucketName":"bucketName",
-            "s3Key":"s3Key",
-            "region":"us-east-2",
-            "runtime":"java8",
-            "role":"java8",
-            "handler":"sample-function"
+            "functionName":"${functionName}",
+            "bucketName":"${bucketName}",
+            "s3Key":"${s3Key}",
+            "region":"${region} ",
+            "runtime":"${runtime} ",
+            "role":"${role} ",
+            "handler":"${handler} "
         }
     color: '#3d6c9e'
   variables:
@@ -88,20 +106,41 @@ spec:
     value: aws-cloud
   - type: xlrelease.StringVariable
     key: accessSecret
-    value: '"accessSecret"'
+    value: accessSecret
   - type: xlrelease.StringVariable
     key: accesskey
-    value: '"accesskey"'
+    value: accesskey
   - type: xlrelease.StringVariable
     key: application-name
     value: aws-app
   - type: xlrelease.StringVariable
     key: package-name
     value: "1.0"
+  - type: xlrelease.StringVariable
+    key: functionName
+    value: functionName
+  - type: xlrelease.StringVariable
+    key: bucketName
+    value: bucketName
+  - type: xlrelease.StringVariable
+    key: s3Key
+    value: s3Key
+  - type: xlrelease.StringVariable
+    key: region
+    value: region
+  - type: xlrelease.StringVariable
+    key: runtime
+    value: runtime
+  - type: xlrelease.StringVariable
+    key: role
+    value: role
+  - type: xlrelease.StringVariable
+    key: handler
+    value: handler
   riskProfile: Default risk profile
 - template: Azure Application Setup
-  scheduledStartDate: 2023-03-23T03:30:00Z
-  dueDate: 2023-03-23T04:30:00Z
+  scheduledStartDate: 2023-03-23T09:00:00+05:30
+  dueDate: 2023-03-23T10:00:00+05:30
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -112,6 +151,14 @@ spec:
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
+    - name: Specify Azure Connection Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - subscription-id
+      - tenant-id
+      - client-id
+      - client-secret
     - name: Configure Azure Connection
       type: deploy.CreateCI
       capabilities:
@@ -156,7 +203,13 @@ spec:
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
-    - name: Create Sample Lambda Deployment from S3
+    - name: Specify Resource Group Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - resourcegroup-name
+      - resourcegroup-location
+    - name: Create Sample Resource Group
       type: deploy.CreateCI
       capabilities:
       - remote
@@ -201,7 +254,8 @@ spec:
     value: resourcegroup-name
   riskProfile: Default risk profile
 - template: GCP Application Setup
-  scheduledStartDate: 2023-03-31T03:30:00Z
+  scheduledStartDate: 2023-03-31T09:00:00+05:30
+  dueDate: 2023-03-31T10:00:00+05:30
   phases:
   - phase: Setup Env and Infra
     tasks:
@@ -209,15 +263,20 @@ spec:
       type: deploy.CreateCI
       capabilities:
       - remote
-      server: DeployServer
       ciID: "Environments/${environment_identifier}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
+    - name: Specify Google Account Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - gcp_project_id
+      - gcp_client_email
+      - private_key
     - name: Create Google Account Cloud Infra
       type: deploy.CreateCI
       capabilities:
       - remote
-      server: DeployServer
       ciID: "Infrastructure/${google_account_cloud_name}"
       ciType: google.AccountCloud
       jsonDescriptor: |-
@@ -232,7 +291,6 @@ spec:
       type: deploy.ControlTask
       capabilities:
       - remote
-      server: DeployServer
       ciId: "Infrastructure/${google_account_cloud_name}"
       taskName: checkConnection
       numberOfContinueRetrials: 0
@@ -246,7 +304,6 @@ spec:
       type: deploy.CreateCI
       capabilities:
       - remote
-      server: DeployServer
       ciID: "Applications/${application_identifier}"
       ciType: udm.Application
       jsonDescriptor: "{}"
@@ -254,14 +311,22 @@ spec:
       type: deploy.CreateCI
       capabilities:
       - remote
-      server: DeployServer
       ciID: "Applications/${application_identifier}/${application_version}"
       ciType: udm.DeploymentPackage
+    - name: Specify Intance Spec Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - zone
+      - machine
+      - image_project
+      - image
+      - wait_time_for_create
+      - wait_time_for_destroy
     - name: Create Google Instance spec
       type: deploy.CreateCI
       capabilities:
       - remote
-      server: DeployServer
       ciID: "Applications/${application_identifier}/${application_version}/${instance_spec_name}"
       ciType: googlecloud.compute.InstanceSpec
       jsonDescriptor: |-
@@ -319,8 +384,8 @@ spec:
     value: gcp_client_email
   riskProfile: Default risk profile
 - template: Tomcat on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-03-23T03:30:00Z
-  dueDate: 2023-03-23T04:30:00Z
+  scheduledStartDate: 2023-03-23T09:00:00+05:30
+  dueDate: 2023-03-23T10:00:00+05:30
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -331,6 +396,16 @@ spec:
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
+    - name: Specify Tomcat Host Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - sudo-username
+      - os
+      - address
+      - port
+      - ssh-username
+      - ssh-privatekey
     - name: Configure Remote Host
       type: deploy.CreateCI
       capabilities:
@@ -365,6 +440,15 @@ spec:
       numberOfPollingTrials: 0
       displayStepLogs: true
       connectionRetries: 10
+    - name: Specify Tomcat Server Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - tomcat-home
+      - tomcat-start-command
+      - tomcat-stop-command
+      - tomcat-status-command
+      - tomcat-status-exptected-output
     - name: Configure Tomcat Server
       type: deploy.CreateCI
       capabilities:
@@ -422,6 +506,16 @@ spec:
       ciID: "Applications/${application-name}/1.0"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
+    - name: Specify Tomcat Datasource
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - jndi-name
+      - datasource-context
+      - database-driver-class-name
+      - database url
+      - db-username
+      - db-password
     - name: Create Sample Tomcat DataSourceSpec
       type: deploy.CreateCI
       capabilities:
@@ -471,16 +565,19 @@ spec:
     value: "1.0"
   - type: xlrelease.StringVariable
     key: tomcat-home
+    value: tomcat-home
   - type: xlrelease.StringVariable
     key: tomcat-start-command
+    value: systemctl start tomcat
   - type: xlrelease.StringVariable
     key: tomcat-status-command
+    value: systemctl status tomcat
   - type: xlrelease.StringVariable
     key: tomcat-status-exptected-output
+    value: active (running)
   - type: xlrelease.StringVariable
     key: tomcat-stop-command
-  - type: xlrelease.StringVariable
-    key: jndi-context
+    value: systemctl stop tomcat
   - type: xlrelease.StringVariable
     key: database url
   - type: xlrelease.StringVariable
@@ -495,8 +592,8 @@ spec:
     key: jndi-name
   riskProfile: Default risk profile
 - template: Websphere on Remote SSH Host - Application Setup
-  scheduledStartDate: 2023-02-14T03:30:00Z
-  dueDate: 2023-02-14T04:30:00Z
+  scheduledStartDate: 2023-02-14T09:00:00+05:30
+  dueDate: 2023-02-14T10:00:00+05:30
   phases:
   - phase: Setup Infra and Env
     tasks:
@@ -507,6 +604,16 @@ spec:
       ciID: "Environments/${environment-name}"
       ciType: udm.Environment
       jsonDescriptor: "{}"
+    - name: Specify WAS Host Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - sudo-username
+      - os
+      - connection-type
+      - address
+      - ssh-username
+      - ssh-password
     - name: Configure Remote Host
       type: deploy.CreateCI
       capabilities:
@@ -539,6 +646,13 @@ spec:
       numberOfPollingTrials: 0
       displayStepLogs: true
       connectionRetries: 10
+    - name: Specify WAS Deployment Manager Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - was-home
+      - was-username
+      - was-password
     - name: Configure Websphere Deployment Manager
       type: deploy.CreateCI
       capabilities:
@@ -589,6 +703,12 @@ spec:
       ciID: "Applications/${application-name}/${package-name}"
       ciType: udm.DeploymentPackage
       jsonDescriptor: "{}"
+    - name: Specify WAS JaasAliasSpec Parameters
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - jaas-password
+      - jaas-username
     - name: Create Sample WAS JaasAliasSpec
       type: deploy.CreateCI
       capabilities:
