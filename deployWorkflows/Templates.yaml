@@ -1,14 +1,16 @@
 # Exported from:        http://host.docker.internal:5516/
 # Release version:      23.1.0-406.1500
-# Date created:         Thu Apr 06 15:56:07 UTC 2023
+# Date created:         Mon Apr 10 14:30:25 UTC 2023
 
 ---
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Deploy Workflows
+  home: Workflows
 spec:
-- template: Aws Application Setup
+- template: AWS Lambda application setup with Digital.ai Deploy
+  description: "Easily create an application in Digital.ai Deploy that can be deployed\
+    \ to AWS Lambda, including its respective environment and infrastructure setup."
   scheduledStartDate: 2023-03-23T03:30:00Z
   dueDate: 2023-03-23T04:30:00Z
   phases:
@@ -110,6 +112,28 @@ spec:
             "role":"${role} ",
             "handler":"${handler} "
         }
+    - name: Create ManagedApplication
+      type: xlrelease.ScriptTask
+      owner: admin
+      script: |-
+        from com.xebialabs.xlrelease.api.v1.views import ManagedApplicationView
+        from com.xebialabs.xlrelease.api.v1.views import ConnectionServerView
+        from java.util import Date
+        from java.text import SimpleDateFormat
+        import datetime
+
+        parsedDate = datetime.datetime.now()
+
+        requestBody = ManagedApplicationView()
+        requestBody.applicationName = "${application-name}"
+        requestBody.managedBy = "${managedBy}"
+        requestBody.dateCreated = parsedDate
+        requestBody.environmentTag = "${environmentTag}"
+        requestBody.applicationReference = "${applicationReference}"
+        connectionServer = ConnectionServerView("${connectionServer}", "", "", "")
+        requestBody.connectionServer = connectionServer
+
+        res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
   tags:
   - app-pipeline-templates
@@ -153,8 +177,26 @@ spec:
   - type: xlrelease.StringVariable
     key: handler
     value: handler
+  - type: xlrelease.StringVariable
+    key: applicationReference
+    value: applicationReference
+  - type: xlrelease.StringVariable
+    key: connectionServer
+    value: connectionServer
+  - type: xlrelease.StringVariable
+    key: environmentTag
+    value: environmentTag
+  - type: xlrelease.StringVariable
+    key: managedBy
+    value: managedBy
   riskProfile: Default risk profile
-- template: Azure Application Setup
+- template: Azure Application setup with Digital.ai Deploy to create Azure resource
+    groups
+  description: "The following workflow outlines a fast and efficient method for creating\
+    \ an application in Digital.ai Deploy that can create Azure resource groups, while\
+    \ also setting up the necessary environment and infrastructure. By following these\
+    \ steps, you can easily create and manage your resource groups without having\
+    \ to worry about the technical details of the underlying infrastructure"
   scheduledStartDate: 2023-03-23T03:30:00Z
   dueDate: 2023-03-23T04:30:00Z
   phases:
@@ -285,7 +327,13 @@ spec:
     key: resourcegroup-name
     value: resourcegroup-name
   riskProfile: Default risk profile
-- template: GCP Application Setup
+- template: GCP Application setup with Digital.ai Deploy for virtual machine instance
+  description: "This workflow provides a streamlined approach for creating an application\
+    \ in Digital.ai Deploy that can quickly and efficiently set up virtual machine\
+    \ instances in GCP, while also configuring the required environment and infrastructure.\
+    \ By following these steps, you can easily create and manage virtual machine instances\
+    \ in GCP without having to worry about the technical details of the underlying\
+    \ infrastructure."
   scheduledStartDate: 2023-03-31T03:30:00Z
   dueDate: 2023-03-31T04:30:00Z
   phases:
@@ -431,7 +479,10 @@ spec:
     key: gcp_client_email
     value: gcp_client_email
   riskProfile: Default risk profile
-- template: Tomcat on Remote SSH Host - Application Setup
+- template: Tomcat DataSource Setup on SSH Host with Digital.ai Deploy
+  description: "Easily create an application in Digital.ai Deploy that can be used\
+    \ to create a DataSource in a Remote Tomcat Server, including its respective environment\
+    \ and infrastructure setup."
   scheduledStartDate: 2023-03-23T03:30:00Z
   dueDate: 2023-03-23T04:30:00Z
   phases:
@@ -666,7 +717,10 @@ spec:
     key: jndi-name
     value: jndi-name
   riskProfile: Default risk profile
-- template: Websphere on Remote SSH Host - Application Setup
+- template: Websphere JaasAlias setup with Digital.ai Deploy
+  description: "Easily create an application in Digital.ai Deploy that can be used\
+    \ to create a JaasAlias in a remote Websphere Server, including its respective\
+    \ environment and infrastructure setup."
   scheduledStartDate: 2023-02-14T03:30:00Z
   dueDate: 2023-02-14T04:30:00Z
   phases:
