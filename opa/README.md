@@ -17,6 +17,14 @@ The OPA integration requires the following:
 * OPA server running and accessible via HTTP(s).
 * Access credentials to the GitHub storage repo which is used to store the policies.
 
+## Set up an OPA server
+
+To set up an OPA server:
+
+1. To get started download an OPA binary for your platform from GitHub releases.
+1. Set permissions on the OPA executable using **chmod 755 ./opa**.
+1. Run the OPA server by executing the **./opa run --server** command.
+
 ## Set up a connection to an OPA server
 
 To set up a connection to an OPA server:
