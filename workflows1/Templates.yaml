@@ -1,6 +1,6 @@
 # Exported from:        http://host.docker.internal:5516/
-# Release version:      23.1.0-406.1500
-# Date created:         Wed Apr 12 15:30:20 UTC 2023
+# Release version:      23.1.0-412.1104
+# Date created:         Wed Apr 12 16:04:12 UTC 2023
 
 ---
 apiVersion: xl-release/v1
@@ -207,6 +207,8 @@ spec:
   - type: xlrelease.StringVariable
     key: managedBy
     value: managedBy
+  scriptUsername: admin
+  scriptUserPassword: !value "xlrelease_Release_AWS_Lambda_application_setup_with_Digital_ai_Deploy_scriptUserPassword"
   riskProfile: Default risk profile
 - template: Azure Application setup with Digital.ai Deploy to create Azure resource
     groups
@@ -529,6 +531,432 @@ spec:
   - type: xlrelease.StringVariable
     key: gcp_client_email
     value: gcp_client_email
+  riskProfile: Default risk profile
+- template: Install Argo Rollouts
+  description: Install Argo Rollouts to Kubernetes cluster.
+  scheduledStartDate: 2022-12-07T08:00:00Z
+  phases:
+  - phase: Check if Argo Rollouts is already installed
+    tasks:
+    - name: Check if remote runner exists
+      type: xlrelease.ScriptTask
+      description: "Task checks if there is a remote runner enabled. Also, the enabled\
+        \ remote runner needs to have \"remote\" capability."
+      script: |-
+        def check_runners(runners):
+          for runner in runners:
+            if runner["enabled"] and "remote" in runner["capabilities"]:
+              return True
+          return False
+
+        runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
+
+        if not check_runners(runners):
+          raise Exception("There is no job runner with 'remote' capability enabled")
+    - name: Input for Argo Rollouts installation
+      type: xlrelease.UserInputTask
+      description: Input for Kubernetes API server URL and Kubernetes namespace where
+        ArgoCD will be installed.Please enter the required information below.
+      owner: "${release.owner}"
+      variables:
+      - kubernetesApiServer
+      - namespace
+    - name: Check if Argo Rollouts namespace exists
+      type: kubernetes.ExistsNamespace
+      description: "Checks if '${namespace}' namespace already exists. If it exists,\
+        \ there will be a check performed if ArgoCD services already exist."
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${namespaceExistsResponse}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: List all services in Argo Rollouts namespace
+      type: kubernetes.ListServices
+      description: |-
+        If '${namespace}' namespace exists, this task will be skipped.
+        Task lists all services and after that checks if there are any ArgoCD services.
+      precondition: |-
+        if releaseVariables['namespaceExistsResponse']['exists'] != 'false':
+          result = True
+        else:
+          result = False
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${allServicesResponse}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: Validate that Argo Rollouts services don't exist
+      type: xlrelease.ScriptTask
+      description: |-
+        If '${namespace}' namespace exists, this task will be skipped.
+        Task checks if there are any Argo Rollouts services in '${namespace}' namespace exist. If there are some, it means that Argo Rollouts is already installed and the release fails.
+      precondition: |-
+        if releaseVariables['namespaceExistsResponse']['exists'] == 'false':
+          result = False
+        else:
+          result = True
+      script: |-
+        import json
+
+        services = json.loads(releaseVariables['allServicesResponse']['services'])
+        for service in services:
+          if service.get('metadata', {}).get('name', '') == "argo-rollouts":
+            raise Exception('Argo Rollouts is already installed in namespace ${namespace}')
+    color: '#3d6c9e'
+  - phase: Install Argo Rollouts
+    tasks:
+    - name: Create argo-rollouts namespace
+      type: kubernetes.CreateNamespace
+      description: "Creates '${namespace}' namespace."
+      precondition: |-
+        import json
+
+        def get_result_from_response(resp):
+            if resp.has_key('exists') and resp['exists'] != 'false':
+              return False
+            else:
+              return True
+
+        if releaseVariables.has_key('argoNamespaceExists'):
+          result = get_result_from_response(releaseVariables['argoNamespaceExists'])
+        else:
+          result = False
+      variableMapping:
+        server: "${kubernetesApiServer}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: Apply Argo Rollouts installation on cluster
+      type: kubernetes.Apply
+      description: "Applies Argo Rollouts installation YAML on '${namespace}' namespace."
+      variableMapping:
+        server: "${kubernetesApiServer}"
+      capabilities:
+      - remote
+      yamlLocation: https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+      namespace: argo-rollouts
+    - name: Check status of pods in argo-rollouts namespace
+      type: kubernetes.CheckPodStatus
+      description: Performs check if all Argo Rollouts services are running successfully.
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${checkService}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+      labelSelector: app.kubernetes.io/name=argo-rollouts
+    color: '#3d6c9e'
+  - phase: Create Argo Rollouts CI
+    tasks:
+    - name: Input for Argo Rollouts CI
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      owner: "${release.owner}"
+      precondition: |-
+        if releaseVariables.has_key('checkService'):
+          checkService = releaseVariables['checkService']
+          if checkService.has_key('allRunning') and checkService['allRunning'] == 'true':
+            result = True
+          else:
+              raise Exception("Argo Rollouts services not running!")
+      variables:
+      - apiToken
+      - usernameRollouts
+      - argoRolloutsHost
+    - name: Create Argo Rollouts CI
+      type: xlrelease.ScriptTask
+      script: '# todo implement when argo rollouts plugin is done'
+    color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
+  - stepper
+  variables:
+  - type: xlrelease.StringVariable
+    key: namespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Kubernetes namespace where Argo Rollouts will be installed
+    value: argo-rollouts
+  - type: xlrelease.ReferenceVariable
+    key: kubernetesApiServer
+    showOnReleaseStart: false
+    label: Kubernetes API server
+    description: Kubernetes API server where Argo Rollouts will be installed
+    referencedType: kubernetes.APIServer
+  - type: xlrelease.MapStringStringVariable
+    key: namespaceExistsResponse
+    requiresValue: false
+    showOnReleaseStart: false
+    label: namespaceExistsResponse
+  - type: xlrelease.StringVariable
+    key: argoRolloutsHost
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Argo Rollouts host
+  - type: xlrelease.StringVariable
+    key: usernameRollouts
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Username
+    value: admin
+  - type: xlrelease.StringVariable
+    key: apiToken
+    requiresValue: false
+    showOnReleaseStart: false
+    label: API token
+  - type: xlrelease.MapStringStringVariable
+    key: checkService
+    requiresValue: false
+    showOnReleaseStart: false
+  - type: xlrelease.MapStringStringVariable
+    key: allServicesResponse
+    requiresValue: false
+    showOnReleaseStart: false
+  scriptUsername: admin
+  riskProfile: Default risk profile
+- template: Install ArgoCD
+  description: Install ArgoCD on Kubernetes cluster for deploying an Application
+  scheduledStartDate: 2022-12-07T08:00:00Z
+  phases:
+  - phase: Check if ArgoCD is already installed
+    tasks:
+    - name: Check if remote runner exists
+      type: xlrelease.ScriptTask
+      description: "Task checks if there is a remote runner enabled. Also, the enabled\
+        \ remote runner needs to have \"remote\" capability."
+      script: |-
+        def check_runners(runners):
+          for runner in runners:
+            if runner["enabled"] and "remote" in runner["capabilities"]:
+              return True
+          return False
+
+        runners = configurationApi.searchByTypeAndTitle("xlrelease.JobRunner", "")
+
+        if not check_runners(runners):
+          raise Exception("There is no job runner with 'remote' capability enabled")
+    - name: Input for ArgoCD installation
+      type: xlrelease.UserInputTask
+      description: Input for Kubernetes API server URL and Kubernetes namespace where
+        ArgoCD will be installed.
+      owner: "${release.owner}"
+      variables:
+      - kubernetesApiServer
+      - namespace
+    - name: Check if ArgoCD namespace exists
+      type: kubernetes.ExistsNamespace
+      description: "Checks if '${namespace}' namespace already exists. If it exists,\
+        \ there will be a check performed if ArgoCD services already exist."
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${argoCDNamespaceExistsResponse}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: List all services in ArgoCD namespace
+      type: kubernetes.ListServices
+      description: |-
+        If '${namespace}' namespace exists, this task will be skipped.
+        Task lists all services and after that checks if there are any ArgoCD services.
+      precondition: |-
+        if releaseVariables['argoCDNamespaceExistsResponse']['exists'] != 'false':
+          result = True
+        else:
+          result = False
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${allServicesResponse}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: Validate that ArgoCD services don't exist
+      type: xlrelease.ScriptTask
+      description: |-
+        If '${namespace}' namespace exists, this task will be skipped.
+        Task checks if there are any ArgoCD services in '${namespace}' namespace exist. If there are some, it means that ArgoCD is already installed and the release fails.
+      precondition: |-
+        if releaseVariables['argoCDNamespaceExistsResponse']['exists'] == 'false':
+          result = False
+        else:
+          result = True
+      script: |-
+        import json
+
+        services = json.loads(releaseVariables['allServicesResponse']['services'])
+        for service in services:
+          if service.get('metadata', {}).get('name', '') == "argocd-server":
+            raise Exception('ArgoCD is already installed in namespace ${namespace}')
+    color: '#3d6c9e'
+  - phase: Install ArgoCD
+    tasks:
+    - name: Create ArgoCD namespace
+      type: kubernetes.CreateNamespace
+      description: "Creates '${namespace}' namespace."
+      precondition: |-
+        if releaseVariables['argoCDNamespaceExistsResponse']['exists'] != 'false':
+          result = False
+        else:
+          result = True
+      variableMapping:
+        server: "${kubernetesApiServer}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+    - name: Apply ArgoCD installation on cluster
+      type: kubernetes.Apply
+      description: "Applies ArgoCD installation YAML on '${namespace}' namespace."
+      variableMapping:
+        server: "${kubernetesApiServer}"
+      capabilities:
+      - remote
+      yamlLocation: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      namespace: "${namespace}"
+    - name: Check status of pods in ArgoCD namespace
+      type: kubernetes.CheckPodStatus
+      description: Performs check if all ArgoCD services are running successfully.
+      variableMapping:
+        server: "${kubernetesApiServer}"
+        commandResponse: "${checkServiceResponse}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+      labelSelector: app.kubernetes.io/name=argocd-server
+    color: '#3d6c9e'
+  - phase: Create CIs for live deployment
+    tasks:
+    - name: Fetch secret
+      type: kubernetes.GetSecret
+      description: Fetches initial ArgoCD dashboard admin password.
+      precondition: |-
+        if releaseVariables['checkServiceResponse']['allRunning'] == 'true':
+          result = True
+        else:
+            raise Exception("ArgoCD services not running!")
+      variableMapping:
+        secureResponse: "${argoCDSecret}"
+        server: "${kubernetesApiServer}"
+      capabilities:
+      - remote
+      namespace: "${namespace}"
+      secretName: argocd-initial-admin-secret
+      dataField: password
+    - name: Input for ArgoCD CI
+      type: xlrelease.UserInputTask
+      description: Input for ArgoCD API server title and host URL for the CI that
+        will be created.
+      owner: "${release.owner}"
+      variables:
+      - argoCDServerTitle
+      - argoCDHost
+    - name: Create ArgoCD live deployment CIs
+      type: xlrelease.ScriptTask
+      description: |-
+        Creates ArgoCD API server CI with given title and host.
+        Also, authentication is set to basic with admin username and initial password.
+        For live deployment, webhook endpoint and event source are created.
+      script: |-
+        import base64
+        import uuid
+
+        from com.xebialabs.deployit.plugin.api.reflect import Type
+        from com.xebialabs.deployit.util import PasswordEncrypter
+
+        server = Type.valueOf("argocd.APIServer").getDescriptor().newInstance("argocd-server")
+
+        server.setProperty("folderId", release.findFolderId())
+        server.setProperty("title", releaseVariables['argoCDServerTitle'])
+        server.setProperty("url", releaseVariables['argoCDHost'])
+        server.setProperty("authenticationMethod", "Basic")
+        server.setProperty("username", "admin")
+
+        # Set password
+        encrypted = releaseVariables["argoCDSecret"]
+        enc = PasswordEncrypter.getInstance()
+        decrypted = enc.ensureDecrypted(encrypted)
+        password = base64.b64decode(decrypted + b'==')
+        server.setProperty("password", password)
+
+        # Set default values
+        server.setProperty("cardinality", 1)
+        server.setProperty("proxyHost", "")
+        server.setProperty("proxyPort", "")
+        server.setProperty("proxyUsername", "")
+        server.setProperty("proxyDomain", "")
+
+        # Add ArgoCD API server
+        configurationApi.addConfiguration(server)
+
+        # Add webhook endpoint
+        authentication = Type.valueOf("events.NoAuthentication").getDescriptor().newInstance("no-authentication")
+
+        endpoint = Type.valueOf("events.PostWebhookEndpoint").getDescriptor().newInstance("post-webhook-endpoint")
+        endpoint.setProperty("folderId", release.findFolderId())
+        endpoint.setProperty("title", releaseVariables['argoCDServerTitle'])
+        endpoint.setProperty("path", "path-" + str(uuid.uuid4()))
+        endpoint.setProperty("authentication", authentication)
+
+        configurationApi.addConfiguration(endpoint)
+
+        # Add event source
+        eventSource = Type.valueOf("argocd.StatusWebhookEventSource").getDescriptor().newInstance("status-event-webhook")
+        eventSource.setProperty("folderId", release.findFolderId())
+        eventSource.setProperty("title", releaseVariables['argoCDServerTitle'])
+        eventSource.setProperty("eventSource", endpoint)
+        eventSource.setProperty("sourceServer", server)
+        eventSource.setProperty("filteredFolders", ["default"])
+
+        configurationApi.addConfiguration(eventSource)
+    color: '#3d6c9e'
+  tags:
+  - stepper
+  - app-pipeline-templates
+  variables:
+  - type: xlrelease.StringVariable
+    key: namespace
+    showOnReleaseStart: false
+    label: Namespace
+    description: Kubernetes namespace where ArgoCD will be installed
+    value: argocd
+  - type: xlrelease.ReferenceVariable
+    key: kubernetesApiServer
+    showOnReleaseStart: false
+    label: Kubernetes API server
+    description: Kubernetes API server where ArgoCD will be installed
+    referencedType: kubernetes.APIServer
+  - type: xlrelease.MapStringStringVariable
+    key: allServicesResponse
+    requiresValue: false
+    showOnReleaseStart: false
+    value:
+      services: "[]"
+  - type: xlrelease.MapStringStringVariable
+    key: argoCDNamespaceExistsResponse
+    requiresValue: false
+    showOnReleaseStart: false
+    value:
+      exists: "false"
+  - type: xlrelease.MapStringStringVariable
+    key: checkServiceResponse
+    requiresValue: false
+    showOnReleaseStart: false
+    value:
+      allRunning: "false"
+  - type: xlrelease.StringVariable
+    key: argoCDHost
+    showOnReleaseStart: false
+    label: ArgoCD API Server Host
+    description: URL to the base of the API Server
+  - type: xlrelease.StringVariable
+    key: argoCDServerTitle
+    showOnReleaseStart: false
+    label: ArgoCD API Server Title
+  - type: xlrelease.PasswordStringVariable
+    key: argoCDSecret
+    requiresValue: false
+    showOnReleaseStart: false
+  scriptUsername: admin
   riskProfile: Default risk profile
 - template: Setup ArgoCD application with initial deployment
   description: "Easily create an application in ArgoCD that can be deployed to Kubernetes\

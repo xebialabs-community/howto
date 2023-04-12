@@ -1,0 +1,15 @@
+# Exported from:        http://host.docker.internal:5516/
+# Release version:      23.1.0-412.1104
+# Date created:         Wed Apr 12 16:04:12 UTC 2023
+
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: Workflows
+spec:
+- name: Deploy Server
+  type: digitalai.DeployServer
+  url: http://3.110.138.48:4516/
+  username: admin
+  password: !value "digitalai_DeployServer_Deploy_Server_password"
