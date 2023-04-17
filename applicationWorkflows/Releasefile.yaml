@@ -1,0 +1,11 @@
+# Exported from:        http://host.docker.internal:5516/
+# Release version:      23.1.0-412.1104
+# Date created:         Mon Apr 17 11:07:13 UTC 2023
+
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Templates.yaml
+  - Notifications.yaml
