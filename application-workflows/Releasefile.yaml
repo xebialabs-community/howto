@@ -1,0 +1,11 @@
+# Exported from:        http://LAPTOP-E5FJSD06:5516/
+# Release version:      23.3.0-417.113
+# Date created:         Mon Apr 17 16:31:52 IST 2023
+
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Notifications.yaml
+  - Templates.yaml
