@@ -30,9 +30,10 @@ In Digital.ai Release,
 5. Create a new connection by specifying the details of the Forked Repository.
 6. Specify the branch as master and specify the Repository path as 'applicationWorkflows' and save.
 ![configure](images/gitops-versioning.png)
-7. Select the latest version displayed and click 'Apply this version'.
+7. Under the connection Screen, create a connection for the target deploy server under the name Deploy Server1
+8. Back in the Version Control screen, select the latest version displayed and click 'Apply this version'.
 ![apply](images/gitops-versioning-versions.PNG)
-8. The workflow templates are populated in the Templates section.
+9. The workflow templates are populated in the Templates section.
 ![templates](images/templates.PNG)
 
 ### Running Workflows
