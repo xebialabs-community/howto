@@ -78,7 +78,7 @@ To add a Get Policy task:
 1. In the **Name of policy** field, add the policy name.
 1. The policy will be stored in the output **Policy** field.
 
-![OPA Get Policy](images/xlr-opa-integration/opa-get-policy.png)
+![OPA Get Policy](images/opa-get-policy.png)
 
 ## Add a Delete Policy task
 
@@ -91,7 +91,7 @@ To add a Delete Policy task:
 1. In the **Server** field, select the configured OPA server.
 1. In the **Name of policy** field, add the policy name.
 
-![OPA Delete Policy](images/xlr-opa-integration/opa-delete-policy.png)
+![OPA Delete Policy](images/opa-delete-policy.png)
 
 ## Add a Evaluate Policy task
 
@@ -106,7 +106,7 @@ To add a Evaluate Policy task:
 1. In the **Name of policy to Check with** field.
 1. In the **Expected Output** field, the expected output will be checked with the actual policy check result.
 
-![OPA Evaluate Policy](images/xlr-opa-integration/opa-evaluate-policy.png)
+![OPA Evaluate Policy](images/opa-evaluate-policy.png)
 
 ## Add a Evaluate Policy task
 
@@ -121,7 +121,7 @@ To add a Evaluate Policy task:
 1. In the **Name of policy to Check with** field.
 1. In the **Expected Output** field, the expected output will be checked with the actual policy check result.
 
-![OPA Evaluate Policy](images/xlr-opa-integration/opa-evaluate-policy.png)
+![OPA Evaluate Policy](images/opa-evaluate-policy.png)
 
 
 ## Add a Parse GitHub Actions Log task
@@ -143,7 +143,7 @@ To add a parse GitHub actions log task:
 1. In the **Json Input** output properties field, the output will be assigned to the variable assigned in this field.
    Note: The output variable can be used for further evaluation as an input.
 
-![OPA Parse GitHub Actions Log](images/xlr-opa-integration/opa-github-actions-parser.png)
+![OPA Parse GitHub Actions Log](images/opa-github-actions-parser.png)
 
 ## Add a Parse Jenkins Log task
 
@@ -164,7 +164,7 @@ To add a parse Jenkins log task:
 1. In the **Json Input** output properties field, the output will be assigned to the variable assigned in this field.
    Note: The output variable can be used for further evaluation as an input.
 
-![OPA Parse Jenkins Actions Log](images/xlr-opa-integration/opa-jenkins-parser.png)
+![OPA Parse Jenkins Actions Log](images/opa-jenkins-parser.png)
 
 ## How to Create an Application Security Evaluation task with OPA - DevSecOps
 
@@ -182,4 +182,4 @@ To Create an Application Security Evaluation task with OPA:
 1. Add other required tasks.
 1. Create and Start the release for Evaluating based on the evaluation add further required tasks.
 
-![OPA App security Template](images/xlr-opa-integration/opa-app-security-github.png)
+![OPA App security Template](images/opa-app-security-github.png)
