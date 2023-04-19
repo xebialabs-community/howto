@@ -1,6 +1,6 @@
 # Exported from:        http://host.docker.internal:5516/
 # Release version:      23.1.0-412.1104
-# Date created:         Tue Apr 18 06:24:20 UTC 2023
+# Date created:         Wed Apr 19 05:24:43 UTC 2023
 
 ---
 apiVersion: xl-release/v1
@@ -216,10 +216,10 @@ spec:
     value: managedBy
   - type: xlrelease.StringVariable
     key: access-key
-    value: AKIA5SLLVCFHGXC32KG7
+    showOnReleaseStart: false
   - type: xlrelease.StringVariable
     key: access-secret
-    value: aLU5bELP2Fepkh3Wi88Gcf4r2q5bowQgrcFm2qpv
+    showOnReleaseStart: false
   - type: xlrelease.DateVariable
     key: dateCreated
     value: 2023-04-09T05:28:00Z
@@ -1816,6 +1816,8 @@ spec:
 
         res = managedApplicationApi.addManagedApplication(requestBody)
     color: '#3d6c9e'
+  tags:
+  - app-pipeline-templates
   variables:
   - type: xlrelease.StringVariable
     key: environment-name
