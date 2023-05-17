@@ -1,0 +1,7 @@
+package checkmarxprotection
+
+allow {
+    input.lowSeverity <= 10
+    input.mediumSeverity <= 2
+    input.highSeverity <= 0
+}

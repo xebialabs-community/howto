@@ -1,0 +1,16 @@
+package iosapplicationsecurity
+
+deny["Must Contain All Required Guards"] {
+	not allow
+}
+
+allow {
+	input.ProtectionSuccessful == true
+	contains(input.EnabledGuardTypes, "Analytics")
+	contains(input.EnabledGuardTypes, "Checksum")
+	contains(input.EnabledGuardTypes, "Obfuscation")
+}
+
+contains(guard, elem) {
+	guard[_] = elem
+}
