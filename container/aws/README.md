@@ -1,5 +1,23 @@
-# release-aws-integration
-It is container based integration for Digital.ai Release 
+# Manage your AWS lambda function
+
+### Before you begin
+This how-to involves working with a variety of tools, such as Digital.ai Release and AWS. You can perform this task by following the instructions. However, being familiar with these tools and technologies can significantly help you when you try them out in your test environment.
+
+### What's the objective?
+The objective is to create, update, invoke, and delete AWS Lambda functions using packages such as .zip files or container images using Digital.ai Release.
+
+### What do you need?
+* A Linux or Windows server (with root and Internet access) that has Digital.ai Release version 23.3.0 (or later) installed
+* Remote runner setup for Digital.ai Release
+* AWS integration for Digital.ai Release
+
+### What do you have?
+* AWS environment access and credentials
+
+### How does it work?
+The AWS integration is based on your inputs, such as function name, S3 zip file, and runtime It allows the creation, updating, invocation, and deletion of AWS Lambda functions using packages like .zip files or container images.
+
+
 
 ### Set up the AWS server
 
