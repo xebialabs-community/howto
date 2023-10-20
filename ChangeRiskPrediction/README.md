@@ -1,6 +1,6 @@
-# Change Risk Prediction
+# Predictive Intelligence using Digital.ai Release and Change Risk Prediction Integration.
 
-Use the Release Template for validating Change Risk Prediction output against OPA policy.
+Use the Release Template for validating Predictive Intelligence using Digital.ai Release and Change Risk Prediction Integration.
 
 ## Before you begin
 
