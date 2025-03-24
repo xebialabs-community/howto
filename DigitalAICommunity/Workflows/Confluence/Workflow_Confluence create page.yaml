@@ -2,7 +2,8 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Confluence
+  path: Workflows/Confluence
+  home: Digital.ai - Community/Workflows/Confluence
 spec:
 - template: Confluence create page
   description: "Easily create a new Confluence page with custom content, apply labels,\
@@ -164,4 +165,4 @@ spec:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
     file: !file "template-logo/228d38359de29d0514f24486c718d60eb92ea0c7/confluence.svg"
-  defaultTargetFolder: Digital.ai - Official/Workflow Executions
+  defaultTargetFolder: Digital.ai - Community/Workflow Executions

@@ -2,7 +2,8 @@
 apiVersion: xl-release/v1
 kind: Templates
 metadata:
-  home: Digital.ai - Official/Workflows/Airflow
+  path: Workflows/Airflow
+  home: Digital.ai - Community/Workflows/Airflow
 spec:
 - template: Airflow trigger DAG run
   description: "Trigger an Airflow DAG run at ease, wait for its completion and get\
@@ -74,4 +75,4 @@ spec:
     type: xlrelease.TemplateLogo
     contentType: image/svg+xml
     file: !file "template-logo/3a86a31a9b4072e95aa0df54f16498c41578374a/Apache Airflow.svg"
-  defaultTargetFolder: Digital.ai - Official/Workflow Executions
+  defaultTargetFolder: Digital.ai - Community/Workflow Executions
