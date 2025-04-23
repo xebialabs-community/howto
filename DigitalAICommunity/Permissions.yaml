@@ -1,0 +1,25 @@
+---
+apiVersion: xl-release/v1
+kind: Permissions
+metadata:
+  path: /
+  home: Digital.ai - Community
+spec:
+- directory: "."
+  teams:
+  - name: Template Owner
+    permissions:
+    - template#edit_failure_handler
+    - template#edit_precondition
+    - template#lock_task
+  - name: Release Admin
+    permissions:
+    - release#edit_failure_handler
+    - release#edit_precondition
+    - release#lock_task
+  - name: Viewer
+    roles:
+    - Authenticated Users
+    permissions:
+    - folder#view
+  - name: Folder Owner

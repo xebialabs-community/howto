@@ -1,0 +1,6 @@
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Workflow_Confluence create page.yaml

@@ -1,0 +1,168 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/Confluence
+  home: Digital.ai - Community/Workflows/Confluence
+spec:
+- template: Confluence create page
+  description: "Easily create a new Confluence page with custom content, apply labels,\
+    \ set access restrictions, and add watchers to stay informed about updates."
+  scheduledStartDate: 2025-02-24T09:00:00+05:30
+  dueDate: 2025-02-24T10:00:00+05:30
+  phases:
+  - phase: Configure connection
+    tasks:
+    - name: Configuration
+      type: xlrelease.UserInputTask
+      description: Please enter the required configuration below.
+      variables:
+      - server
+      - space
+    color: "#3d6c9e"
+  - phase: Configure page details
+    tasks:
+    - name: Specify page details
+      type: xlrelease.UserInputTask
+      description: Please enter the required page details below.
+      variables:
+      - parentPageTitle
+      - title
+      - content
+    - name: Specify labels
+      type: xlrelease.UserInputTask
+      description: Please enter the labels for page. (Optional)
+      variables:
+      - labels
+    - name: Configure page access
+      type: xlrelease.UserInputTask
+      description: "Grant access to a Confluence page for below users while restricting\
+        \ access for all others. If no restrictions are set, the page remains open\
+        \ to all. (Optional)"
+      variables:
+      - restrictedUserIds
+    - name: Specify watchers
+      type: xlrelease.UserInputTask
+      description: Please enter the user Ids who needs to be added as content watchers.
+        (Optional)
+      variables:
+      - watcherUserIds
+    color: "#3d6c9e"
+  - phase: Create wiki page
+    tasks:
+    - name: Create wiki page
+      type: confluence.addWikiPage
+      spaceKey: "${space}"
+      parentPageTitle: "${parentPageTitle}"
+      pageTitle: "${title}"
+      pageText: "${content}"
+      description: This automated task will create a new wiki page with details provided.
+      taskRecoverOp: SKIP_TASK
+      variableMapping:
+        pythonScript.pageId: "${pageId}"
+        pythonScript.confluenceServer: "${server}"
+    - name: Prepare input for preferences
+      type: xlrelease.ScriptTask
+      description: This automated task will preprocess newly created page Id for subsequent
+        tasks.
+      script: "releaseVariables['pageIds'] = [${pageId}]"
+    color: "#3d6c9e"
+  - phase: Add preferences to page
+    tasks:
+    - name: Add labels
+      type: confluence.addLabelsToPages
+      spaceKey: "${space}"
+      description: This automated task will add specified labels to created wiki page.
+      precondition: "result = len(${labels}) > 0"
+      variableMapping:
+        pythonScript.pageIds: "${pageIds}"
+        pythonScript.labels: "${labels}"
+        pythonScript.confluenceServer: "${server}"
+    - name: Add restriction
+      type: confluence.addRestrictionToPages
+      spaceKey: "${space}"
+      description: This automated task will add restrictions to created wiki page.
+      precondition: "result = len(${restrictedUserIds}) > 0"
+      variableMapping:
+        pythonScript.userIds: "${restrictedUserIds}"
+        pythonScript.pageIds: "${pageIds}"
+        pythonScript.confluenceServer: "${server}"
+    - name: Add content watchers
+      type: confluence.addContentWatchers
+      spaceKey: "${space}"
+      description: This automated task will add content watchers to created wiki page.
+      precondition: "result = len(${watcherUserIds}) > 0"
+      variableMapping:
+        pythonScript.userIds: "${restrictedUserIds}"
+        pythonScript.pageIds: "${pageIds}"
+        pythonScript.confluenceServer: "${server}"
+    color: "#3d6c9e"
+  kind: WORKFLOW
+  categories:
+  - Application onboarding
+  - Application Life Cycle Management
+  variables:
+  - type: xlrelease.ReferenceVariable
+    key: server
+    showOnReleaseStart: false
+    label: Confluence server
+    description: Select or create a Confluence server connection
+    referencedType: confluence.Server
+  - type: xlrelease.StringVariable
+    key: space
+    showOnReleaseStart: false
+    label: Space
+    description: Confluence space ID
+  - type: xlrelease.StringVariable
+    key: parentPageTitle
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Parent page title
+    description: Title of parent page where new page needs to be created
+  - type: xlrelease.StringVariable
+    key: title
+    showOnReleaseStart: false
+    label: Page title
+    description: Title for wiki page
+  - type: xlrelease.StringVariable
+    key: content
+    showOnReleaseStart: false
+    label: Page content
+    description: Content for wiki page
+    multiline: true
+  - type: xlrelease.ListStringVariable
+    key: restrictedUserIds
+    requiresValue: false
+    showOnReleaseStart: false
+    label: User IDs
+    description: User IDs to access the page
+  - type: xlrelease.ListStringVariable
+    key: watcherUserIds
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Watcher user IDs
+    description: User IDs to be added for page watchers
+  - type: xlrelease.ListStringVariable
+    key: labels
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Labels
+    description: Labels provided for wiki page
+  - type: xlrelease.StringVariable
+    key: pageId
+    showOnReleaseStart: false
+    label: Page ID
+    description: Page ID of the created wiki page
+  - type: xlrelease.ListStringVariable
+    key: pageIds
+    requiresValue: false
+    showOnReleaseStart: false
+    label: Page IDs
+    description: PageID input for tasks
+  disableNotifications: true
+  author: Digital.ai
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/svg+xml
+    file: !file "template-logo/228d38359de29d0514f24486c718d60eb92ea0c7/confluence.svg"
+  defaultTargetFolder: Digital.ai - Community/Workflow Executions
