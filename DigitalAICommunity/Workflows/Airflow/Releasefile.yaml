@@ -1,0 +1,6 @@
+---
+apiVersion: xl-release/v1
+kind: Import
+spec:
+  imports:
+  - Workflow_Airflow trigger DAG run.yaml

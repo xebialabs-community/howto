@@ -1,0 +1,78 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  path: Workflows/Airflow
+  home: Digital.ai - Community/Workflows/Airflow
+spec:
+- template: Airflow trigger DAG run
+  description: "Trigger an Airflow DAG run at ease, wait for its completion and get\
+    \ run details."
+  scheduledStartDate: 2025-03-04T09:00:00+05:30
+  dueDate: 2025-03-04T10:00:00+05:30
+  phases:
+  - phase: Workflow tasks
+    tasks:
+    - name: Configure connection
+      type: xlrelease.UserInputTask
+      description: Please enter the required information below.
+      variables:
+      - airflowServer
+    - name: Specify run details
+      type: xlrelease.UserInputTask
+      description: "Please enter the DAG run details.  The DAG run ID is optional\
+        \ . If not specified, a run ID is auto-generated."
+      variables:
+      - dagId
+      - dagRunId
+      - waitForCompletion
+    - name: Trigger DAG run
+      type: airflow.triggerDagRun
+      dagId: "${dagId}"
+      runId: "${dagRunId}"
+      description: Triggers a new DAG run for the given DAG.  Waits for the DAG run
+        to complete.
+      variableMapping:
+        pythonScript.waitForSuccessfulRun: "${waitForCompletion}"
+        pythonScript.airflowServer: "${airflowServer}"
+        pythonScript.dagRunId: "${dagRunId}"
+    - name: Get DAG run
+      type: airflow.getDagRun
+      dagId: "${dagId}"
+      dagRunId: "${dagRunId}"
+      description: Get details of the DAG run
+      variableMapping:
+        pythonScript.airflowServer: "${airflowServer}"
+  kind: WORKFLOW
+  categories:
+  - Application Life Cycle Management
+  variables:
+  - type: xlrelease.StringVariable
+    key: dagId
+    showOnReleaseStart: false
+    label: DAG ID
+    description: Unique identifier for the DAG
+  - type: xlrelease.StringVariable
+    key: dagRunId
+    requiresValue: false
+    showOnReleaseStart: false
+    label: DAG run ID
+    description: Unique identifier for the DAG run
+  - type: xlrelease.BooleanVariable
+    key: waitForCompletion
+    showOnReleaseStart: false
+    label: Wait for completion
+    description: Wait for the DAG run completion
+  - type: xlrelease.ReferenceVariable
+    key: airflowServer
+    showOnReleaseStart: false
+    label: "Airflow: Server"
+    description: Create or select an Airflow connection
+    referencedType: airflow.Server
+  disableNotifications: true
+  author: Digital.ai
+  logo:
+    type: xlrelease.TemplateLogo
+    contentType: image/svg+xml
+    file: !file "template-logo/3a86a31a9b4072e95aa0df54f16498c41578374a/Apache Airflow.svg"
+  defaultTargetFolder: Digital.ai - Community/Workflow Executions

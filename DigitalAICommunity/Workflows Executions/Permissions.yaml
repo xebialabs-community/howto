@@ -1,0 +1,26 @@
+---
+apiVersion: xl-release/v1
+kind: Permissions
+metadata:
+  path: Workflow Executions
+  home: Digital.ai - Community/Workflow Executions
+spec:
+- directory: "."
+  teams:
+  - name: Folder Owner
+  - name: Workflow Admin
+    roles:
+    - Authenticated Users
+    permissions:
+    - folder#view
+    - workflow#start_execution
+  - name: Template Owner
+    permissions:
+    - template#edit_failure_handler
+    - template#edit_precondition
+    - template#lock_task
+  - name: Release Admin
+    permissions:
+    - release#edit_failure_handler
+    - release#edit_precondition
+    - release#lock_task
