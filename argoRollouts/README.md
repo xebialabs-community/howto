@@ -1,4 +1,4 @@
-# ArgoRollout using Release, EKS and Linkerd
+# ArgoRollout using Release and EKS
 
 Use the templates and manifests to perform bluegreen and canary deployments.
 
@@ -7,9 +7,8 @@ Use the templates and manifests to perform bluegreen and canary deployments.
 
 1. Kubernetes cluster (EKS Workshop - https://www.eksworkshop.com/) 
 2. AWS Load Balancer Controller (https://www.eksworkshop.com/beginner/180_fargate/prerequisites-for-alb/)
-3. Linkerd (https://linkerd.io/2.11/getting-started/)
-4. Argo rollouts setup in the EKS cluster(https://argoproj.github.io/argo-rollouts/) and argo rollouts kubectl plugin installed in a Unix host.
-5. Digital.ai Release with xlr-argo-rollouts-integration and xlr-kubernetes-integration plugins installed
+3. Argo rollouts setup in the EKS cluster(https://argoproj.github.io/argo-rollouts/) and argo rollouts kubectl plugin installed in a Unix host.
+4. Digital.ai Release with xlr-argo-rollouts-integration and xlr-kubernetes-integration plugins installed
 
 ## Initial Canary Rollout Setup in K8s
 
@@ -25,8 +24,6 @@ Alternatively follow the steps to set up the deployment
    <br/>&rarr; creates a rollout with canary strategy, replica set of 5 pods with image guestbook:blue
 1. `kubectl apply -f https://raw.githubusercontent.com/xebialabs-community/howto/master/argoRollouts/manifests/redis.yaml -n guestbook-canary`
    <br/>&rarr; creates a redis pod and service
-1. `linkerd viz dashboard &`
-   <br/>&rarr; dashboard shows the pods and trafic split between the two services, canary and stable under the guestbook-canary namespace
 1. `kubectl get service guestbook-stable -n guestbook-canary`
    <br/>&rarr; to view the application in browser <external-ip>:8080/index.html
    
@@ -43,7 +40,6 @@ Alternatively follow the steps to set up the deployment
 
 1. kubectl argo rollouts set image guestbook-canary-rollout guestbook-container=xldevdocker/guestbook:green -n guestbook-canary
    <br/>&rarr; updates 20% of pods in guestbook-canary-rollout with new image
-1. check the linkerd dashboard for trafic split to reflect 20(weight of first step) in the canary service
 1. kubectl argo rollouts promote guestbook-canary-rollout -n guestbook-canary
    <br/>&rarr; executes the rest of the update steps
 1. kubectl argo rollouts promote guestbook-canary-rollout -n guestbook-canary
@@ -79,8 +75,6 @@ Alternatively follow the steps to setup the deployment
    <br/>&rarr; creates a rollout with bluegreen strategy, replica set of 2 pods with image guestbook:blue
 1. `kubectl apply -f https://raw.githubusercontent.com/xebialabs-community/howto/master/argoRollouts/manifests/redis.yaml -n guestbook-bluegreen`
    <br/>&rarr; creates a redis pod and service
-1. `linkerd viz dashboard &`
-   <br/>&rarr; dashboard shows the pods created
 1. `kubectl get service guestbook-bluegreen-active -n guestbook-bluegreen`
    <br/>&rarr; to view the application in browser <external-ip>:8080/index.html
 
