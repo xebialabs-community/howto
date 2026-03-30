@@ -1,5 +1,7 @@
 # Manage your Pipelines using Spinnaker
 
+Spinnaker is an open-source, multi-cloud continuous delivery platform originally developed by Netflix. It provides powerful deployment orchestration capabilities across cloud providers like AWS, Azure, Google Cloud, and Kubernetes. This integration enables Digital.ai Release to orchestrate Spinnaker pipelines as part of your broader release automation strategy, allowing you to combine Spinnaker's deployment strength with Release's comprehensive release orchestration, approvals, and governance features.
+
 ### Before you begin
 This how-to involves working with a variety of tools, such as Digital.ai Release and Spinnaker. You can perform this task by following the instructions. However, being familiar with these tools and technologies can significantly help you when you try them out in your test environment.
 
@@ -34,6 +36,60 @@ The Spinnaker integration connects Digital.ai Release to Spinnaker's Gate API, a
 9. To save the configuration, click **Save**.
 
 ![Create Spinnaker Configuration](images/connection.png)
+
+## Using Spinnaker Tasks in a Release Flow
+
+Here's an example of how Spinnaker tasks fit into a typical release template. This workflow automates a phased deployment with validation:
+
+### Example Release Flow: Multi-Environment Deployment
+
+```
+Release: Deploy Application v2.3.1
+├── Phase: Pre-Deployment Validation
+│   ├── Get Applications (Container)
+│   │   └── Verify "my-app" exists in Spinnaker
+│   └── Get Pipelines (Container)
+│       └── List available pipelines for validation
+│
+├── Phase: Deploy to Staging
+│   ├── Gate: Approval Task
+│   │   └── Manual approval required
+│   ├── Trigger Pipeline (Container)
+│   │   ├── Application: my-app
+│   │   ├── Pipeline Name: deploy-to-staging
+│   │   ├── Parameters: {"environment": "staging", "version": "2.3.1"}
+│   │   └── Wait For Completion: ✓
+│   └── Script: Validate Deployment
+│       └── Check health endpoints
+│
+├── Phase: Deploy to Production
+│   ├── Gate: Approval Task
+│   │   └── Production gate - requires 2 approvals
+│   ├── Trigger Pipeline (Container)
+│   │   ├── Application: my-app
+│   │   ├── Pipeline Name: deploy-to-production
+│   │   ├── Parameters: {"environment": "production", "version": "2.3.1"}
+│   │   └── Wait For Completion: ✓
+│   └── Notification Task
+│       └── Send success notification
+│
+└── Phase: Monitoring
+    └── Get Pipeline Status (Container)
+        ├── Execution Id: ${deployTask.execution}
+        └── Verify final status
+```
+
+![Spinnaker Release Template Example](images/spinnaker-release-template.png)
+
+The screenshot above shows this workflow implemented as a Digital.ai Release template, demonstrating how all the Spinnaker tasks integrate seamlessly into a complete release automation flow.
+
+**Real-World Scenario:**
+In a typical enterprise release flow, you might:
+1. Use **Get Applications** to validate that all required Spinnaker applications exist
+2. Use **Get Pipeline Config** to verify pipeline configuration matches requirements
+3. Use **Trigger Pipeline** with **Wait For Completion** for sequential deployments across environments
+4. Add Digital.ai Release **Gates** between Spinnaker deployments for approval workflows
+5. Use **Get Pipeline Status** in monitoring tasks or failure recovery scenarios
 
 ## Trigger Pipeline (Container)
 
