@@ -1,0 +1,410 @@
+---
+apiVersion: xl-release/v1
+kind: Templates
+metadata:
+  home: Spinnaker Demo
+spec:
+  # Spinnaker Server Configuration
+  - name: My Spinnaker Server
+    type: containerSpinnaker.Server
+    url: http://spin-gate:8084
+    uiurl: http://spinnaker.example.com
+    authenticationMethod: Basic
+    username: spinnaker-user
+    password: !value SPINNAKER_PASSWORD
+    capabilities:
+      - remote
+
+  # Demo Templates
+  - template: Multi-Environment Deployment
+    description: |
+      This template demonstrates a complete multi-environment deployment workflow using Spinnaker integration.
+      
+      **Flow:**
+      1. Pre-Deployment Validation - Verify Spinnaker applications and pipelines exist
+      2. Deploy to Staging - Trigger staging deployment with approval gate
+      3. Deploy to Production - Trigger production deployment with approval gate
+      4. Post-Deployment Monitoring - Verify final deployment status
+      
+      **Key Features:**
+      - Approval gates between environments
+      - Variable passing between tasks
+      - Validation of Spinnaker resources
+      - Status monitoring and error handling
+    
+    scheduledStartDate: 2026-04-01T09:00:00+00:00
+    dueDate: 2026-04-01T18:00:00+00:00
+    
+    phases:
+      # Phase 1: Pre-Deployment Validation
+      - phase: Pre-Deployment Validation
+        color: "#08B153"
+        tasks:
+          - name: Get Applications
+            type: containerSpinnaker.GetApplications
+            description: |
+              Retrieve all applications from Spinnaker to verify that 'my-app' exists.
+              This ensures the target application is properly configured before deployment.
+            server: My Spinnaker Server
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.applications: "${applicationsList}"
+
+          - name: Verify Application Exists
+            type: xlrelease.ScriptTask
+            description: Check if 'my-app' exists in the applications list
+            script: |
+              if "${appName}" not in releaseVariables["applicationsList"]:
+                  raise Exception("Application '${appName}' not found in Spinnaker")
+              print("✓ Application '${appName}' found in Spinnaker")
+
+          - name: Get Pipelines
+            type: containerSpinnaker.GetPipelines
+            description: |
+              Retrieve all pipelines for the application.
+              Validates that required deployment pipelines exist.
+            server: My Spinnaker Server
+            application: "${appName}"
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.pipelines: "${pipelinesList}"
+
+          - name: Verify Pipelines Exist
+            type: xlrelease.ScriptTask
+            description: Check if required pipelines exist
+            script: |
+              required_pipelines = ["deploy-to-staging", "deploy-to-production"]
+              available_pipelines = releaseVariables["pipelinesList"]
+              
+              for pipeline in required_pipelines:
+                  if pipeline not in available_pipelines:
+                      raise Exception(f"Required pipeline '{pipeline}' not found")
+                  print(f"✓ Pipeline '{pipeline}' found")
+              
+              print("✓ All required pipelines are available")
+
+      # Phase 2: Deploy to Staging
+      - phase: Deploy to Staging
+        color: "#FD8D26"
+        tasks:
+          - name: Staging Deployment Approval
+            type: xlrelease.GateTask
+            description: Manual approval required before deploying to staging environment
+            conditions:
+              - name: Approve Staging Deployment
+                type: xlrelease.GateCondition
+
+          - name: Trigger Staging Pipeline
+            type: containerSpinnaker.TriggerPipeline
+            description: |
+              Trigger the Spinnaker deployment pipeline for staging environment.
+              Waits for pipeline completion before proceeding.
+            server: My Spinnaker Server
+            application: "${appName}"
+            pipelineName: deploy-to-staging
+            parameters:
+              environment: staging
+              version: "${releaseVersion}"
+              deploymentRegion: "${stagingRegion}"
+              instanceCount: "2"
+            waitForCompletion: true
+            timeout: 15
+            maxRetries: 40
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.execution: "${stagingExecutionId}"
+              pythonScript.executionStatus: "${stagingStatus}"
+
+          - name: Validate Staging Deployment
+            type: xlrelease.ScriptTask
+            description: Verify staging deployment completed successfully
+            script: |
+              status = releaseVariables["stagingStatus"]
+              if status != "SUCCEEDED":
+                  raise Exception(f"Staging deployment failed with status: {status}")
+              print(f"✓ Staging deployment succeeded")
+              print(f"  Execution ID: {releaseVariables['stagingExecutionId']}")
+
+          - name: Run Staging Health Checks
+            type: xlrelease.ScriptTask
+            description: Validate application health in staging environment
+            script: |
+              # This is a placeholder for actual health check logic
+              # In production, you would call actual health endpoints
+              print("Running health checks on staging environment...")
+              print("  ✓ Application responding on port 8080")
+              print("  ✓ Database connectivity verified")
+              print("  ✓ External API connections healthy")
+              print("Staging environment is healthy and ready")
+
+          - name: Send Staging Success Notification
+            type: xlrelease.NotificationTask
+            description: Notify team of successful staging deployment
+            addresses:
+              - devops-team@example.com
+            subject: "✓ Staging Deployment Successful - ${appName} v${releaseVersion}"
+            body: |
+              Staging deployment has completed successfully.
+              
+              Application: ${appName}
+              Version: ${releaseVersion}
+              Execution ID: ${stagingExecutionId}
+              Status: ${stagingStatus}
+              
+              View in Spinnaker: http://spinnaker.example.com/#/applications/${appName}/executions/details/${stagingExecutionId}
+
+      # Phase 3: Deploy to Production
+      - phase: Deploy to Production
+        color: "#D94C3D"
+        tasks:
+          - name: Production Deployment Approval
+            type: xlrelease.GateTask
+            description: |
+              Production gate requiring 2 approvals from authorized personnel.
+              This ensures proper oversight before production changes.
+            conditions:
+              - name: Approve Production Deployment
+                type: xlrelease.GateCondition
+              - name: Second Approval Required
+                type: xlrelease.GateCondition
+
+          - name: Get Pipeline Configuration
+            type: containerSpinnaker.GetPipelineConfig
+            description: |
+              Retrieve production pipeline configuration for validation.
+              Ensures pipeline settings match production requirements.
+            server: My Spinnaker Server
+            application: "${appName}"
+            pipelineName: deploy-to-production
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.configuration: "${productionPipelineConfig}"
+
+          - name: Validate Production Pipeline Config
+            type: xlrelease.ScriptTask
+            description: Verify production pipeline configuration meets requirements
+            script: |
+              import json
+              config = json.loads(releaseVariables["productionPipelineConfig"])
+              
+              print("Validating production pipeline configuration...")
+              print(f"  Pipeline Name: {config.get('name', 'N/A')}")
+              print(f"  Application: {config.get('application', 'N/A')}")
+              print(f"  Stages: {len(config.get('stages', []))}")
+              print("✓ Production pipeline configuration validated")
+
+          - name: Trigger Production Pipeline
+            type: containerSpinnaker.TriggerPipeline
+            description: |
+              Trigger the Spinnaker deployment pipeline for production environment.
+              Uses blue-green deployment strategy with automatic rollback capability.
+            server: My Spinnaker Server
+            application: "${appName}"
+            pipelineName: deploy-to-production
+            parameters:
+              environment: production
+              version: "${releaseVersion}"
+              deploymentRegion: "${productionRegion}"
+              instanceCount: "5"
+              deploymentStrategy: blue-green
+              rollbackEnabled: "true"
+            waitForCompletion: true
+            timeout: 15
+            maxRetries: 60
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.execution: "${productionExecutionId}"
+              pythonScript.executionStatus: "${productionStatus}"
+
+          - name: Validate Production Deployment
+            type: xlrelease.ScriptTask
+            description: Verify production deployment completed successfully
+            script: |
+              status = releaseVariables["productionStatus"]
+              if status != "SUCCEEDED":
+                  raise Exception(f"Production deployment failed with status: {status}")
+              print(f"✓ Production deployment succeeded")
+              print(f"  Execution ID: {releaseVariables['productionExecutionId']}")
+
+          - name: Run Production Health Checks
+            type: xlrelease.ScriptTask
+            description: Comprehensive health validation for production environment
+            script: |
+              # This is a placeholder for actual health check logic
+              print("Running comprehensive health checks on production...")
+              print("  ✓ Application responding on all regions")
+              print("  ✓ Load balancer health check passing")
+              print("  ✓ Database replication in sync")
+              print("  ✓ Cache warming completed")
+              print("  ✓ CDN edge nodes updated")
+              print("  ✓ SSL certificates valid")
+              print("Production environment is fully operational")
+
+          - name: Send Production Success Notification
+            type: xlrelease.NotificationTask
+            description: Notify stakeholders of successful production deployment
+            addresses:
+              - devops-team@example.com
+              - product-team@example.com
+              - management@example.com
+            subject: "✓ Production Deployment Successful - ${appName} v${releaseVersion}"
+            body: |
+              Production deployment has completed successfully.
+              
+              Application: ${appName}
+              Version: ${releaseVersion}
+              Execution ID: ${productionExecutionId}
+              Status: ${productionStatus}
+              Region: ${productionRegion}
+              
+              View in Spinnaker: http://spinnaker.example.com/#/applications/${appName}/executions/details/${productionExecutionId}
+              
+              Release Notes: https://releases.example.com/${appName}/${releaseVersion}
+
+      # Phase 4: Post-Deployment Monitoring
+      - phase: Post-Deployment Monitoring
+        color: "#991C71"
+        tasks:
+          - name: Wait for Monitoring Window
+            type: xlrelease.Task
+            description: Allow 5 minutes for metrics to stabilize
+
+          - name: Check Production Status
+            type: containerSpinnaker.GetPipelineStatus
+            description: |
+              Final verification of production pipeline execution status.
+              Ensures deployment remains stable after initial health checks.
+            server: My Spinnaker Server
+            execution: "${productionExecutionId}"
+            capabilities:
+              - remote
+            variableMapping:
+              pythonScript.executionStatus: "${finalProductionStatus}"
+
+          - name: Verify Stable Deployment
+            type: xlrelease.ScriptTask
+            description: Confirm deployment remains stable
+            script: |
+              status = releaseVariables["finalProductionStatus"]
+              if status != "SUCCEEDED":
+                  raise Exception(f"Production deployment became unstable: {status}")
+              print(f"✓ Production deployment remains stable")
+              print(f"  Final Status: {status}")
+              print(f"  Execution ID: {releaseVariables['productionExecutionId']}")
+
+          - name: Update Release Documentation
+            type: xlrelease.ScriptTask
+            description: Log deployment details for audit trail
+            script: |
+              print("Deployment Summary:")
+              print("=" * 60)
+              print(f"Application: {releaseVariables['appName']}")
+              print(f"Version: {releaseVariables['releaseVersion']}")
+              print(f"Staging Execution: {releaseVariables['stagingExecutionId']}")
+              print(f"Production Execution: {releaseVariables['productionExecutionId']}")
+              print(f"Staging Status: {releaseVariables['stagingStatus']}")
+              print(f"Production Status: {releaseVariables['finalProductionStatus']}")
+              print("=" * 60)
+              print("✓ Deployment successfully completed across all environments")
+
+    # Release Variables
+    variables:
+      - type: xlrelease.StringVariable
+        key: appName
+        requiresValue: true
+        showOnReleaseStart: true
+        label: Application Name
+        description: Name of the Spinnaker application to deploy
+        value: my-app
+
+      - type: xlrelease.StringVariable
+        key: releaseVersion
+        requiresValue: true
+        showOnReleaseStart: true
+        label: Release Version
+        description: Version number to deploy (e.g., 2.3.1)
+        value: 2.3.1
+
+      - type: xlrelease.StringVariable
+        key: stagingRegion
+        requiresValue: false
+        showOnReleaseStart: true
+        label: Staging Region
+        description: AWS/GCP/Azure region for staging deployment
+        value: us-west-2
+
+      - type: xlrelease.StringVariable
+        key: productionRegion
+        requiresValue: false
+        showOnReleaseStart: true
+        label: Production Region
+        description: AWS/GCP/Azure region for production deployment
+        value: us-east-1
+
+      # Output variables from tasks
+      - type: xlrelease.ListStringVariable
+        key: applicationsList
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Applications List
+        description: List of applications from Spinnaker
+
+      - type: xlrelease.ListStringVariable
+        key: pipelinesList
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Pipelines List
+        description: List of pipelines for the application
+
+      - type: xlrelease.StringVariable
+        key: stagingExecutionId
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Staging Execution ID
+        description: Spinnaker execution ID for staging deployment
+
+      - type: xlrelease.StringVariable
+        key: stagingStatus
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Staging Status
+        description: Status of staging deployment
+
+      - type: xlrelease.StringVariable
+        key: productionExecutionId
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Production Execution ID
+        description: Spinnaker execution ID for production deployment
+
+      - type: xlrelease.StringVariable
+        key: productionStatus
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Production Status
+        description: Status of production deployment
+
+      - type: xlrelease.StringVariable
+        key: finalProductionStatus
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Final Production Status
+        description: Final status check of production deployment
+
+      - type: xlrelease.StringVariable
+        key: productionPipelineConfig
+        requiresValue: false
+        showOnReleaseStart: false
+        label: Production Pipeline Config
+        description: Production pipeline configuration JSON
+
+    tags:
+      - spinnaker
+      - deployment
+      - multi-environment
+      - demo

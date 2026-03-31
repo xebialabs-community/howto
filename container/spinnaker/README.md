@@ -1,178 +1,264 @@
-# Manage your Pipelines using Spinnaker
+# Hands-On: Orchestrate Spinnaker CD Pipelines from Digital.ai Release
 
-Spinnaker is an open-source, multi-cloud continuous delivery platform originally developed by Netflix. It provides powerful deployment orchestration capabilities across cloud providers like AWS, Azure, Google Cloud, and Kubernetes. This integration enables Digital.ai Release to orchestrate Spinnaker pipelines as part of your broader release automation strategy, allowing you to combine Spinnaker's deployment strength with Release's comprehensive release orchestration, approvals, and governance features.
+In this how-to you will create a sample application and pipelines in Spinnaker, import a ready-made Release template, and run a multi-environment CD workflow end-to-end — complete with approval gates, automated status checks, and notifications.
 
-### Before you begin
-This how-to involves working with a variety of tools, such as Digital.ai Release and Spinnaker. You can perform this task by following the instructions. However, being familiar with these tools and technologies can significantly help you when you try them out in your test environment.
-
-### What's the objective?
-The objective is to interact with Spinnaker pipelines from Digital.ai Release to trigger deployments, inspect pipeline configurations, and monitor execution status as part of your automated release process.
-
-### What do you need?
-* A Linux or Windows server (with root and Internet access) that has Digital.ai Release version 24.1.0 (or later) installed
-* Remote runner setup for Digital.ai Release
-* Spinnaker integration for Digital.ai Release
-
-### What do you have?
-* A running Spinnaker instance with Gate API accessible
-* Spinnaker credentials
-
-### How does it work?
-The Spinnaker integration connects Digital.ai Release to Spinnaker's Gate API, allowing you to trigger pipelines, retrieve application and pipeline information, and monitor pipeline execution status from your release flows.
-
-## Set up Spinnaker Configuration
-
-1. From the navigation pane, under **CONFIGURATION**, click **Connections**.
-2. Under **HTTP Server connections**, next to **Spinnaker: Server (Container)**, click the add button.
-   The **New Spinnaker: Server (Container)** page opens.
-3. In the **Title** field, enter the name of the configuration.
-   This name will display in Spinnaker tasks.
-4. In the **URL** field, enter the URL of the Spinnaker Gate API server (for example, `http://spin-gate:8084`).
-5. In the **UI URL** field, enter the URL of the Spinnaker UI (for example, `http://spinnaker.example.com`).
-6. Select the **Authentication method** to use when connecting to Spinnaker:
-   * **Basic** — username and password authentication
-7. If you selected **Basic** authentication, enter the **Username** and **Password** for your Spinnaker account.
-8. To test the connection, click **Test**.
-9. To save the configuration, click **Save**.
-
-![Create Spinnaker Configuration](images/connection.png)
-
-## Using Spinnaker Tasks in a Release Flow
-
-Here's an example of how Spinnaker tasks fit into a typical release template. This workflow automates a phased deployment with validation:
-
-### Example Release Flow: Multi-Environment Deployment
+## What you will build
 
 ```
-Release: Deploy Application v2.3.1
-├── Phase: Pre-Deployment Validation
-│   ├── Get Applications (Container)
-│   │   └── Verify "my-app" exists in Spinnaker
-│   └── Get Pipelines (Container)
-│       └── List available pipelines for validation
+Digital.ai Release
 │
-├── Phase: Deploy to Staging
-│   ├── Gate: Approval Task
-│   │   └── Manual approval required
-│   ├── Trigger Pipeline (Container)
-│   │   ├── Application: my-app
-│   │   ├── Pipeline Name: deploy-to-staging
-│   │   ├── Parameters: {"environment": "staging", "version": "2.3.1"}
-│   │   └── Wait For Completion: ✓
-│   └── Script: Validate Deployment
-│       └── Check health endpoints
+├── Phase 1 — Pre-flight
+│   ├── Get Applications      →  verify "my-app" exists in Spinnaker
+│   └── Get Pipelines         →  verify "deploy-to-staging" and "deploy-to-production" exist
 │
-├── Phase: Deploy to Production
-│   ├── Gate: Approval Task
-│   │   └── Production gate - requires 2 approvals
-│   ├── Trigger Pipeline (Container)
-│   │   ├── Application: my-app
-│   │   ├── Pipeline Name: deploy-to-production
-│   │   ├── Parameters: {"environment": "production", "version": "2.3.1"}
-│   │   └── Wait For Completion: ✓
-│   └── Notification Task
-│       └── Send success notification
+├── Phase 2 — Staging
+│   ├── Approval Gate         →  manual sign-off
+│   └── Trigger Pipeline      →  POST /pipelines/my-app/deploy-to-staging  (waits for SUCCEEDED)
 │
-└── Phase: Monitoring
-    └── Get Pipeline Status (Container)
-        ├── Execution Id: ${deployTask.execution}
-        └── Verify final status
+├── Phase 3 — Production
+│   ├── Approval Gate         →  manual sign-off (× 2)
+│   ├── Get Pipeline Config   →  validate pipeline settings before running
+│   └── Trigger Pipeline      →  POST /pipelines/my-app/deploy-to-production (waits for SUCCEEDED)
+│
+└── Phase 4 — Monitoring
+    └── Get Pipeline Status   →  final spot-check on execution ID
 ```
 
-![Spinnaker Release Template Example](images/spinnaker-release-template.png)
+## Before you begin
 
-The screenshot above shows this workflow implemented as a Digital.ai Release template, demonstrating how all the Spinnaker tasks integrate seamlessly into a complete release automation flow.
+| What you need | Notes |
+|---|---|
+| Digital.ai Release 24.1.0+ with the Spinnaker (Container) plugin installed | See [plugin installation docs](https://docs.digital.ai/bundle/devops-release-version-24.1/page/release/how-to/plugin-installation.html) |
+| Remote runner configured and running | See [remote runner setup](https://docs.digital.ai/bundle/devops-release-version-24.1/page/release/remote-runner/remote-runner-setup.html) |
+| A running Spinnaker instance with Gate API reachable | See [Spinnaker installation guide](https://spinnaker.io/docs/setup/install/) |
+| XL CLI (`xl`) 24.1.0+ | `xl version` |
 
-**Real-World Scenario:**
-In a typical enterprise release flow, you might:
-1. Use **Get Applications** to validate that all required Spinnaker applications exist
-2. Use **Get Pipeline Config** to verify pipeline configuration matches requirements
-3. Use **Trigger Pipeline** with **Wait For Completion** for sequential deployments across environments
-4. Add Digital.ai Release **Gates** between Spinnaker deployments for approval workflows
-5. Use **Get Pipeline Status** in monitoring tasks or failure recovery scenarios
+---
 
-## Trigger Pipeline (Container)
+## Step 1 — Configure the Spinnaker connection in Release
 
-The _Trigger Pipeline (Container)_ task triggers a Spinnaker pipeline for a given application and optionally waits for the pipeline execution to complete.
+1. In Release, under **CONFIGURATION**, click **Connections**.
+2. Next to **Spinnaker: Server (Container)**, click **+**.
+3. Fill in the fields:
 
-1. In the release flow tab of a Release template, add a task of type **Spinnaker** > **Trigger Pipeline (Container)**.
-2. Click the added task to open it.
-3. In the **Capabilities** field, enter a value that matches the capability set for your remote runner.
-   This will help you to route jobs to that particular remote runner.
-4. In the **Server** field, select the Spinnaker server configuration.
-5. In the **Application** field, enter the name of the Spinnaker application.
-6. In the **Pipeline Name** field, enter the name of the Spinnaker pipeline to trigger.
-7. In the **Parameters** field, provide any key-value pairs to pass as pipeline parameters.
-8. Switch on the **Wait For Completion** toggle if you want the task to wait until the pipeline execution finishes.
-9. In the **Retry Wait Time** field, enter the number of seconds to wait between status check retries (default: 15).
-10. In the **Max Retries** field, enter the maximum number of status check retries (default: 5).
+   | Field | Value |
+   |---|---|
+   | Title | `My Spinnaker Server` (must match the template) |
+   | URL | Gate API URL — e.g. `http://spin-gate:8084` |
+   | UI URL | Deck URL — e.g. `http://spinnaker.example.com` |
+   | Authentication method | Basic |
+   | Username | your Spinnaker username |
+   | Password | your Spinnaker password |
 
-**Output properties:**
-* **execution** — the Spinnaker pipeline execution ID
-* **executionStatus** — the final status of the pipeline execution
+4. Click **Test**, then **Save**.
 
-![Trigger Pipeline Container](images/trigger-pipeline.png)
+![Spinnaker connection configuration](images/connection.png)
 
-## Get Applications (Container)
+---
 
-The _Get Applications (Container)_ task retrieves the list of all applications registered in Spinnaker.
+## Step 2 — Create a sample application and pipelines in Spinnaker
 
-1. In the release flow tab of a Release template, add a task of type **Spinnaker** > **Get Applications (Container)**.
-2. Click the added task to open it.
-3. In the **Capabilities** field, enter a value that matches the capability set for your remote runner.
-   This will help you to route jobs to that particular remote runner.
-4. In the **Server** field, select the Spinnaker server configuration.
+You need an application called `my-app` with two pipelines (`deploy-to-staging`, `deploy-to-production`) before the template can run. If you already have them, skip ahead.
 
-**Output properties:**
-* **applications** — the list of Spinnaker application names
+### 2.1 Create the application
 
-![Get Applications Container](images/get-applications.png)
+In the Spinnaker UI:
 
-## Get Pipelines (Container)
+1. Click **Actions → Create Application**.
+2. Set **Name** to `my-app` and fill in your email.
+3. Click **Create**.
 
-The _Get Pipelines (Container)_ task retrieves all pipeline definitions for a given Spinnaker application.
+Or via the Gate API:
 
-1. In the release flow tab of a Release template, add a task of type **Spinnaker** > **Get Pipelines (Container)**.
-2. Click the added task to open it.
-3. In the **Capabilities** field, enter a value that matches the capability set for your remote runner.
-   This will help you to route jobs to that particular remote runner.
-4. In the **Server** field, select the Spinnaker server configuration.
-5. In the **Application** field, enter the name of the Spinnaker application whose pipelines you want to retrieve.
+```bash
+curl -u <user>:<pass> -X POST http://<gate-url>/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job": [{
+      "type": "createApplication",
+      "application": {
+        "name": "my-app",
+        "description": "Demo app for Release integration",
+        "email": "devops@example.com"
+      }
+    }],
+    "application": "my-app",
+    "description": "Create my-app"
+  }'
+```
 
-**Output properties:**
-* **pipelines** — the list of pipeline names for the specified application
+### 2.2 Create the staging pipeline
 
-![Get Pipelines Container](images/get-pipelines.png)
+In the Spinnaker UI for `my-app`:
 
-## Get Pipeline Config (Container)
+1. Go to **Pipelines → Configure a new pipeline**.
+2. Name it `deploy-to-staging`.
+3. Add a **Wait** stage (10 seconds) — this simulates an actual deploy so the pipeline completes quickly.
+4. Under **Pipeline Actions → Edit as JSON**, add parameters so Release can pass values through:
 
-The _Get Pipeline Config (Container)_ task retrieves the full configuration of a specific Spinnaker pipeline.
+```json
+"parameterConfig": [
+  {"name": "environment", "default": "staging", "required": false},
+  {"name": "version",     "default": "latest",  "required": false}
+]
+```
 
-1. In the release flow tab of a Release template, add a task of type **Spinnaker** > **Get Pipeline Config (Container)**.
-2. Click the added task to open it.
-3. In the **Capabilities** field, enter a value that matches the capability set for your remote runner.
-   This will help you to route jobs to that particular remote runner.
-4. In the **Server** field, select the Spinnaker server configuration.
-5. In the **Application** field, enter the name of the Spinnaker application.
-6. In the **Pipeline Name** field, enter the name of the pipeline whose configuration you want to retrieve.
+5. Save the pipeline.
 
-**Output properties:**
-* **configuration** — the pipeline configuration as a JSON
+Or via the Gate API:
 
-![Get Pipeline Config Container](images/get-pipeline-config.png)
+```bash
+curl -u <user>:<pass> -X POST http://<gate-url>/pipelines \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "deploy-to-staging",
+    "application": "my-app",
+    "stages": [
+      {
+        "type": "wait",
+        "name": "Simulated Deploy",
+        "waitTime": 10,
+        "refId": "1",
+        "requisiteStageRefIds": []
+      }
+    ],
+    "parameterConfig": [
+      {"name": "environment", "default": "staging"},
+      {"name": "version",     "default": "latest"}
+    ]
+  }'
+```
 
-## Get Pipeline Status (Container)
+### 2.3 Create the production pipeline
 
-The _Get Pipeline Status (Container)_ task retrieves the current execution status of a running or completed Spinnaker pipeline.
+Repeat 2.2 with the name `deploy-to-production`.
 
-1. In the release flow tab of a Release template, add a task of type **Spinnaker** > **Get Pipeline Status (Container)**.
-2. Click the added task to open it.
-3. In the **Capabilities** field, enter a value that matches the capability set for your remote runner.
-   This will help you to route jobs to that particular remote runner.
-4. In the **Server** field, select the Spinnaker server configuration.
-5. In the **Execution Id** field, enter the Spinnaker pipeline execution ID to check. You can reference the output of a **Trigger Pipeline** task here.
+Confirm both pipelines appear at **my-app → Pipelines** in the Spinnaker UI.
 
-**Output properties:**
-* **executionStatus** — the current status of the pipeline execution (for example, `RUNNING`, `SUCCEEDED`, `FAILED`)
+---
 
-![Get Pipeline Status Container](images/get-pipeline-status.png)
+## Step 3 — Import the demo Release template
+
+The template file [spinnaker-demo-template.yaml](spinnaker-demo-template.yaml) in this folder contains the complete four-phase workflow and all required release variables.
+
+### 3.1 Create your secrets file
+
+```bash
+cp secrets.xlvals.example secrets.xlvals
+# Edit secrets.xlvals and replace the placeholder with your real Spinnaker password
+```
+
+`secrets.xlvals` is in `.gitignore` — never commit it.
+
+### 3.2 Apply the template
+
+```bash
+xl apply -f spinnaker-demo-template.yaml \
+  --values secrets.xlvals \
+  --xl-release-url http://<release-url> \
+  --xl-release-username admin \
+  --xl-release-password <password>
+```
+
+In the Release UI go to **Design → Templates → Spinnaker Demo**. You should see the **Multi-Environment Deployment** template.
+
+![Imported release template](images/spinnaker-release-template.png)
+
+> **Before running:** open the template, go to **Settings**, and update the **My Spinnaker Server** connection reference to point to the connection you created in Step 1. Also verify the `url` and `uiurl` fields on the server CI match your environment.
+
+---
+
+## Step 4 — Run the template
+
+### 4.1 Create a release
+
+1. Open **Multi-Environment Deployment**.
+2. Click **New release** and name it `my-app v2.3.1`.
+3. Review the variables — update `appName`, `releaseVersion`, and region values if needed:
+
+   | Variable | Default |
+   |---|---|
+   | `appName` | `my-app` |
+   | `releaseVersion` | `2.3.1` |
+   | `stagingRegion` | `us-west-2` |
+   | `productionRegion` | `us-east-1` |
+
+4. Click **Create**, then **Start release**.
+
+### 4.2 Phase 1 — Pre-flight validation
+
+The tasks in this phase run automatically in sequence.
+
+**Get Applications** calls `GET /applications` and stores all application names in `${applicationsList}`.
+
+![Get Applications task](images/get-applications.png)
+
+The **Verify Application Exists** script then checks that `my-app` is in that list and fails fast if it isn't — catching misconfiguration before any deployment starts.
+
+**Get Pipelines** calls `GET /applications/my-app/pipelines` and stores pipeline names in `${pipelinesList}`.
+
+![Get Pipelines task](images/get-pipelines.png)
+
+**Verify Pipelines Exist** checks that both `deploy-to-staging` and `deploy-to-production` are present.
+
+Click any running task and open the **Log** tab to watch real-time output.
+
+### 4.3 Phase 2 — Deploy to Staging
+
+The **Staging Deployment Approval** gate pauses the release. Click it, then click **Complete** to approve.
+
+**Trigger Staging Pipeline** posts to `POST /pipelines/my-app/deploy-to-staging` with the parameters `environment=staging` and `version=2.3.1`, then polls for completion. The execution ID is stored in `${stagingExecutionId}`.
+
+![Trigger Pipeline task](images/trigger-pipeline.png)
+
+Watch the pipeline run live in Spinnaker at `http://<spinnaker-ui>/#/applications/my-app/executions`.
+
+Once Spinnaker reports `SUCCEEDED`, the Release script task validates the status and the phase finishes green.
+
+### 4.4 Phase 3 — Deploy to Production
+
+The **Production Deployment Approval** gate requires two sign-offs. Complete both conditions, then:
+
+- **Get Pipeline Config** fetches the full production pipeline JSON and stores it in `${productionPipelineConfig}` so the next script can validate configuration before any changes go live.
+
+  ![Get Pipeline Config task](images/get-pipeline-config.png)
+
+- **Trigger Production Pipeline** fires `deploy-to-production` and waits for `SUCCEEDED`.
+
+### 4.5 Phase 4 — Monitoring
+
+**Get Pipeline Status** makes one final call to `GET /pipelines/{productionExecutionId}` to confirm the deployment is still `SUCCEEDED` after the monitoring window.
+
+![Get Pipeline Status task](images/get-pipeline-status.png)
+
+When all phases complete, the release status changes to **Completed**.
+
+---
+
+## How the tasks map to the Gate API
+
+| Release task | Gate API call | Key output |
+|---|---|---|
+| Get Applications | `GET /applications` | `${applicationsList}` |
+| Get Pipelines | `GET /applications/{app}/pipelines` | `${pipelinesList}` |
+| Get Pipeline Config | `GET /applications/{app}/pipelineConfigs/{name}` | `${productionPipelineConfig}` |
+| Trigger Pipeline | `POST /pipelines/{app}/{pipeline}` → polls `GET /pipelines/{id}` | `${*ExecutionId}`, `${*Status}` |
+| Get Pipeline Status | `GET /pipelines/{executionId}` | `${finalProductionStatus}` |
+
+---
+
+## Troubleshooting
+
+**Test connection fails**  
+Verify the Gate URL is reachable from the Release server or remote runner network. If Release runs in a container, use the service hostname (`spin-gate`) rather than `localhost`.
+
+**"Application not found" in Release script task**  
+The application name in `my-app` variable must exactly match the Spinnaker application name (case-sensitive).
+
+**Trigger Pipeline times out**  
+Increase **Max Retries** on the task (each retry waits **Retry Wait Time** seconds). For a 10-second wait stage, the default 40 × 15 s = 600 s is more than enough.
+
+**`xl apply` fails — "unknown type containerSpinnaker.Server"**  
+The Spinnaker (Container) plugin is not installed in Release. Install it first, then re-apply.
+
+
