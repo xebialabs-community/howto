@@ -28,8 +28,8 @@ Digital.ai Release
 
 | What you need | Notes |
 |---|---|
-| Digital.ai Release 25.3 or later with the Spinnaker (Container) plugin installed | See [plugin installation docs](https://docs.digital.ai/bundle/devops-release-version-25.3/page/release/how-to/plugin-installation.html) |
-| Remote runner configured and running | See [remote runner setup](https://docs.digital.ai/bundle/devops-release-version-25.3/page/release/remote-runner/remote-runner-setup.html) |
+| Digital.ai Release 25.3 or later with the Spinnaker (Container) plugin installed | See [plugin installation docs](https://docs.digital.ai/release/docs/category/plugin-management-1) |
+| Remote runner configured and running | See [remote runner setup](https://docs.digital.ai/release/docs/category/release-runner-installation) |
 | A running Spinnaker instance with Gate API reachable | See [Spinnaker installation guide](https://spinnaker.io/docs/setup/install/) |
 | XL CLI (`xl`) 25.3+ | `xl version` |
 
