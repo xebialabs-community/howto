@@ -28,10 +28,10 @@ Digital.ai Release
 
 | What you need | Notes |
 |---|---|
-| Digital.ai Release 25.3 or later with the Spinnaker (Container) plugin installed | See [plugin installation docs](https://docs.digital.ai/bundle/devops-release-version-25.3/page/release/how-to/plugin-installation.html) |
-| Remote runner configured and running | See [remote runner setup](https://docs.digital.ai/bundle/devops-release-version-25.3/page/release/remote-runner/remote-runner-setup.html) |
+| Digital.ai Release 24.1.0+ with the Spinnaker (Container) plugin installed | See [plugin installation docs](https://docs.digital.ai/bundle/devops-release-version-24.1/page/release/how-to/plugin-installation.html) |
+| Remote runner configured and running | See [remote runner setup](https://docs.digital.ai/bundle/devops-release-version-24.1/page/release/remote-runner/remote-runner-setup.html) |
 | A running Spinnaker instance with Gate API reachable | See [Spinnaker installation guide](https://spinnaker.io/docs/setup/install/) |
-| XL CLI (`xl`) 25.3+ | `xl version` |
+| XL CLI (`xl`) 24.1.0+ | `xl version` |
 
 ---
 
@@ -191,13 +191,15 @@ The tasks in this phase run automatically in sequence.
 
 **Get Applications** calls `GET /applications` and stores all application names in `${applicationsList}`.
 
+![Get Applications task](images/get-applications.png)
+
 The **Verify Application Exists** script then checks that `my-app` is in that list and fails fast if it isn't — catching misconfiguration before any deployment starts.
 
 **Get Pipelines** calls `GET /applications/my-app/pipelines` and stores pipeline names in `${pipelinesList}`.
 
-**Verify Pipelines Exist** checks that both `deploy-to-staging` and `deploy-to-production` are present.
+![Get Pipelines task](images/get-pipelines.png)
 
-![Pre-Deployment Validation phase](images/pre-deployment.png)
+**Verify Pipelines Exist** checks that both `deploy-to-staging` and `deploy-to-production` are present.
 
 Click any running task and open the **Log** tab to watch real-time output.
 
@@ -207,7 +209,7 @@ The **Staging Deployment Approval** gate pauses the release. Click it, then clic
 
 **Trigger Staging Pipeline** posts to `POST /pipelines/my-app/deploy-to-staging` with the parameters `environment=staging` and `version=2.3.1`, then polls for completion. The execution ID is stored in `${stagingExecutionId}`.
 
-![Deploy to Staging phase](images/staging.png)
+![Trigger Pipeline task](images/trigger-pipeline.png)
 
 Watch the pipeline run live in Spinnaker at `http://<spinnaker-ui>/#/applications/my-app/executions`.
 
@@ -219,15 +221,15 @@ The **Production Deployment Approval** gate requires two sign-offs. Complete bot
 
 - **Get Pipeline Config** fetches the full production pipeline JSON and stores it in `${productionPipelineConfig}` so the next script can validate configuration before any changes go live.
 
-- **Trigger Production Pipeline** fires `deploy-to-production` and waits for `SUCCEEDED`.
+  ![Get Pipeline Config task](images/get-pipeline-config.png)
 
-![Deploy to Production phase](images/deploy-to-production.png)
+- **Trigger Production Pipeline** fires `deploy-to-production` and waits for `SUCCEEDED`.
 
 ### 4.5 Phase 4 — Monitoring
 
 **Get Pipeline Status** makes one final call to `GET /pipelines/{productionExecutionId}` to confirm the deployment is still `SUCCEEDED` after the monitoring window.
 
-![Post-Deployment Monitoring phase](images/post-deployment.png)
+![Get Pipeline Status task](images/get-pipeline-status.png)
 
 When all phases complete, the release status changes to **Completed**.
 
