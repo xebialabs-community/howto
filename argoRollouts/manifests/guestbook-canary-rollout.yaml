@@ -8,8 +8,6 @@ spec:
     canary:
       canaryService: guestbook-canary
       stableService: guestbook-stable
-      trafficRouting:
-        smi: {}
       steps:
       - setWeight: 20
       - pause: {}
@@ -25,8 +23,6 @@ spec:
       app: guestbook-canary
   template:
     metadata:
-      annotations:
-        linkerd.io/inject: enabled
       labels:
         app: guestbook-canary
     spec:

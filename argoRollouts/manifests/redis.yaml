@@ -23,8 +23,6 @@ spec:
       app: redis
   template:
     metadata:
-      annotations:
-        linkerd.io/inject: enabled
       labels:
         app: redis
         selector: redis
