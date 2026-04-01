@@ -1,4 +1,4 @@
-# Predictive Intelligence using Digital.ai Release and Change Risk Prediction Integration.
+# Al Governance Release Template
 
 Use the Release Template for validating Predictive Intelligence using Digital.ai Release and Change Risk Prediction Integration.
 
